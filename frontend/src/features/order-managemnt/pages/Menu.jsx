@@ -1,4 +1,3 @@
-
 import React, { useContext } from "react";
 import { CartContext } from "../context/CartContext";
 
@@ -19,6 +18,12 @@ const dummyItems = [
     id: 3,
     name: "Half / 4Pc",
     price: 2600,
+    image: "https://via.placeholder.com/150",
+  },
+  {
+    id: 4,
+    name: "Full / 8Pc",
+    price: 4950,
     image: "https://via.placeholder.com/150",
   },
 ];
@@ -47,8 +52,10 @@ const Menu = () => {
               alt={item.name}
               style={{ width: "100%", height: "150px", objectFit: "cover" }}
             />
+
             <h3>{item.name}</h3>
             <p>Rs. {item.price}</p>
+
             <button onClick={() => addToCart(item)}>Add to Bucket</button>
           </div>
         ))}

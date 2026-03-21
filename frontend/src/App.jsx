@@ -1,11 +1,13 @@
 import React from "react";
-import Cart from "./pages/Cart";
-import { CartProvider } from "./context/CartContext";
+import { CartProvider } from "./features/order-managemnt/context/CartContext";
+import Menu from "./features/order-managemnt/pages/Menu";
+import Cart from "./features/order-managemnt/pages/Cart";
 
 function App() {
   return (
     <CartProvider>
-      {/* your routes/components */}
+      <Menu />
+      <Cart />
     </CartProvider>
   );
 }
