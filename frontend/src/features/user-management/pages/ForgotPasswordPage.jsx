@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import LandingLeafIcon from '../components/LandingLeafIcon';
 import { isValidEmail } from '../utils/formValidation';
-
-function LeafIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" />
-    </svg>
-  );
-}
 
 const inputErrorClass = 'border-red-400 focus:ring-red-100';
 const inputOkClass = 'border-[#354A3F]/20 focus:border-[#354A3F] focus:ring-2 focus:ring-[#354A3F]/15';
@@ -17,9 +10,6 @@ const linkClass = 'font-semibold text-[#354A3F] underline-offset-2 hover:underli
 const btnPrimary =
   'w-full rounded-full bg-[#354A3F] py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#2B3D32] hover:shadow-lg';
 
-/**
- * Forgot password — enter email to receive a reset code (UI only; wire to API later).
- */
 function ForgotPasswordPage() {
   const [step, setStep] = useState('email'); // 'email' | 'code'
   const [email, setEmail] = useState('');
@@ -48,7 +38,6 @@ function ForgotPasswordPage() {
     setStep('code');
     setCode('');
     setCodeError('');
-    // Hook: POST /auth/forgot-password { email }
   };
 
   const handleVerifyCode = (e) => {
@@ -60,7 +49,6 @@ function ForgotPasswordPage() {
     }
     setCodeError('');
     window.alert('Code verified (UI only — connect your backend to reset the password).');
-    // Hook: POST /auth/verify-reset-code { email, code }
   };
 
   const handleResend = () => {
@@ -73,7 +61,7 @@ function ForgotPasswordPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
           <Link to="/" className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#354A3F]/15 text-[#354A3F]">
-              <LeafIcon className="h-5 w-5" />
+              <LandingLeafIcon className="h-5 w-5" />
             </div>
             <span className="font-serif text-xl font-semibold tracking-tight text-[#354A3F]">UNI EATS</span>
           </Link>
@@ -92,10 +80,10 @@ function ForgotPasswordPage() {
           }}
         />
         <div className="pointer-events-none absolute left-4 top-24 text-[#354A3F]/10 md:left-12">
-          <LeafIcon className="h-24 w-24" />
+          <LandingLeafIcon className="h-24 w-24" />
         </div>
         <div className="pointer-events-none absolute bottom-20 right-8 rotate-12 text-[#354A3F]/10">
-          <LeafIcon className="h-20 w-20" />
+          <LandingLeafIcon className="h-20 w-20" />
         </div>
 
         <div className="mx-auto flex min-h-[calc(100vh-73px)] max-w-6xl items-center justify-center px-5 py-10 md:px-8 md:py-14">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import FloatingSupportChat from '../components/FloatingSupportChat';
 import riceAndCurry1 from '../assets/riceandcurry1.png';
 import lunchbox from '../assets/lunchbox.png';
 
@@ -353,6 +354,8 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <FloatingSupportChat />
     </div>
   );
 }

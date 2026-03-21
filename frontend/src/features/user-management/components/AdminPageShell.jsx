@@ -1,15 +1,10 @@
 import React from 'react';
 
-/**
- * Shared header strip + title + description for admin section pages.
- * Optional classNames for layout variants (e.g. centered dashboard title).
- */
 export default function AdminPageShell({
   title,
   description,
   children,
   stripClassName = '',
-  /** Defaults to `text-xl md:text-2xl` when omitted; pass full size classes to override. */
   titleClassName = 'text-xl md:text-2xl',
   descriptionClassName = '',
 }) {

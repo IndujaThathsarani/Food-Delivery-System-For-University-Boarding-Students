@@ -1,6 +1,11 @@
 import React from 'react';
 import AdminPageShell from '../../components/AdminPageShell';
-import { MOCK_ROLE_MGMT_STAFF } from '../../constants/adminTabs';
+
+const MOCK_STAFF = [
+  { name: 'Sahan Mendis', email: 'sahan@unieats.com', currentRole: 'Delivery Manager', assignRole: 'Delivery Manager', status: 'Approved' },
+  { name: 'Tharushi Silva', email: 'tharushi@unieats.com', currentRole: 'Order Manager', assignRole: 'Order Manager', status: 'Approved' },
+  { name: 'Pasindu Jayasuriya', email: 'pasindu@unieats.com', currentRole: 'Food Menu Manager', assignRole: 'Food Menu Manager', status: 'Approved' },
+];
 
 export default function RoleManagementPage() {
   return (
@@ -20,7 +25,7 @@ export default function RoleManagementPage() {
               </tr>
             </thead>
             <tbody>
-              {MOCK_ROLE_MGMT_STAFF.map((row) => (
+              {MOCK_STAFF.map((row) => (
                 <tr key={row.email} className="hover:bg-[#16a34a]/10">
                   <td className="p-3 text-sm font-normal text-black border border-[#16a34a]/25">{row.name}</td>
                   <td className="p-3 text-sm font-normal text-black border border-[#16a34a]/25">{row.email}</td>
@@ -44,7 +49,6 @@ export default function RoleManagementPage() {
                       </button>
                       <button
                         type="button"
-                        title="UI only — not connected"
                         className="rounded-lg border border-red-600 bg-red-600 px-3 py-1.5 text-xs font-normal text-white transition hover:bg-red-700 hover:border-red-700"
                       >
                         Remove this user

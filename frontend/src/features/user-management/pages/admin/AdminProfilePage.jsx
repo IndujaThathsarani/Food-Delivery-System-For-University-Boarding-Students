@@ -1,18 +1,32 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { clearAuth } from '../../../../lib/auth';
+import { clearAuth, getUser } from '../../../../lib/auth';
 import LandingLeafIcon from '../../components/LandingLeafIcon';
 import idPhoto1 from '../../mock/r1.png';
 import { digitsOnlyMax10 } from '../../utils/formValidation';
 
+function initialProfileForm() {
+  const u = getUser();
+  if (!u) {
+    return { name: '', phone: '', email: '', photo: idPhoto1 };
+  }
+  let photo = idPhoto1;
+  const raw = u.studentPhotoUrl || u.photoUrl;
+  if (typeof raw === 'string' && raw.trim()) {
+    photo = raw.trim();
+  }
+  return {
+    name: (u.fullName && String(u.fullName).trim()) || '',
+    phone: u.phone ? digitsOnlyMax10(String(u.phone)) : '',
+    email: (u.email && String(u.email).trim()) || '',
+    photo,
+  };
+}
+
 export default function AdminProfilePage() {
   const navigate = useNavigate();
-  const [profileForm, setProfileForm] = useState({
-    name: 'Induja Customer',
-    phone: '0774561122',
-    email: 'induja@unieats.com',
-    photo: idPhoto1,
-  });
+  const sessionUser = getUser();
+  const [profileForm, setProfileForm] = useState(initialProfileForm);
   const [profileErrors, setProfileErrors] = useState({});
 
   const inputBase =
@@ -74,9 +88,16 @@ export default function AdminProfilePage() {
             <h1 className="text-center font-serif text-xl leading-tight tracking-wide font-normal text-black md:text-2xl">
               YOUR PROFILE
             </h1>
-            <p className="mx-auto mt-1.5 max-w-lg text-center text-xs leading-snug font-normal text-black md:text-sm">
-              Update your campus dining account details.
-            </p>
+            {sessionUser?.email ? (
+              <p className="mt-2 text-center text-[11px] font-normal text-black/60">
+                Signed in as <span className="text-black/80">{sessionUser.email}</span>
+                {sessionUser.accountType ? (
+                  <span className="ml-1 rounded-full bg-[#16a34a]/15 px-2 py-0.5 text-[10px] uppercase tracking-wide text-black">
+                    {sessionUser.accountType}
+                  </span>
+                ) : null}
+              </p>
+            ) : null}
 
             <form className="mt-5 space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

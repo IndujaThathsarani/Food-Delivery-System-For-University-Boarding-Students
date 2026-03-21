@@ -27,14 +27,9 @@ export default function AdminLayout() {
   const goToTab = useCallback(
     (tabLabel) => {
       const path = TAB_PATHS[tabLabel];
-      if (!path) return;
-      if (tabLabel === 'User Profile') {
-        navigate(`/admin/${path}`, { state: { from: location.pathname } });
-        return;
-      }
-      navigate(`/admin/${path}`);
+      if (path) navigate(`/admin/${path}`);
     },
-    [navigate, location.pathname],
+    [navigate],
   );
 
   return (
