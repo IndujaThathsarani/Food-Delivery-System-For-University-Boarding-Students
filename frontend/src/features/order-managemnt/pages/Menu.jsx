@@ -93,7 +93,7 @@ const Menu = () => {
                 style={{
                   fontSize: "18px",
                   fontWeight: "bold",
-                  color: "#48b222",
+                  color: "#000000",
                   marginBottom: "14px",
                 }}
               >

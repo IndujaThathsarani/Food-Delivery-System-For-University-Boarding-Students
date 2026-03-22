@@ -42,11 +42,12 @@ export const CartProvider = ({ children }) => {
     setCartItems(updatedCart);
   };
 
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
   const getCartTotal = () => {
-    return cartItems.reduce(
-      (total, item) => total + item.price * item.qty,
-      0
-    );
+    return cartItems.reduce((total, item) => total + item.price * item.qty, 0);
   };
 
   return (
@@ -57,6 +58,7 @@ export const CartProvider = ({ children }) => {
         decreaseQty,
         removeFromCart,
         getCartTotal,
+        clearCart,
       }}
     >
       {children}

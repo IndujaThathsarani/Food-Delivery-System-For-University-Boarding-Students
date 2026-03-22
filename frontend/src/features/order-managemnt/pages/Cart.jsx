@@ -1,9 +1,12 @@
 import React, { useContext } from "react";
 import { CartContext } from "../context/CartContext";
 
-const Cart = () => {
+const Cart = ({ onCheckout }) => {
   const { cartItems, addToCart, decreaseQty, removeFromCart, getCartTotal } =
     useContext(CartContext);
+
+  const deliveryFee = cartItems.length > 0 ? 400 : 0;
+  const finalTotal = getCartTotal() + deliveryFee;
 
   return (
     <div
@@ -97,9 +100,34 @@ const Cart = () => {
               borderTop: "2px solid #eee",
             }}
           >
-            <h3 style={{ color: "#48b222", margin: 0 }}>
-              Total: Rs. {getCartTotal()}
+            <p style={{ margin: "0 0 8px 0", color: "#555" }}>
+              Sub Total: Rs. {getCartTotal()}
+            </p>
+
+            <p style={{ margin: "0 0 8px 0", color: "#555" }}>
+              Delivery Fee: Rs. {deliveryFee}
+            </p>
+
+            <h3 style={{ color: "#000000", marginBottom: "15px" }}>
+              Total: Rs. {finalTotal}
             </h3>
+
+          <button
+  onClick={onCheckout}
+  style={{
+    width: "100%",
+    padding: "14px",
+    backgroundColor: "#48b222",
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "16px",
+  }}
+>
+  Checkout
+</button>
           </div>
         </>
       )}
