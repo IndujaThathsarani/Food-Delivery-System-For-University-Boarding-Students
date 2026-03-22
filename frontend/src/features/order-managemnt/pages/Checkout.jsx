@@ -19,23 +19,49 @@ const Checkout = ({ onBack }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePlaceOrder = (e) => {
-    e.preventDefault();
+const handlePlaceOrder = async () => {
+  try {
+    const deliveryFee = 400;
+    const subTotal = getCartTotal();
+    const total = subTotal + deliveryFee;
 
     const orderData = {
-      customer: formData,
+      customer: {
+        fullName: formData.fullName,
+        phone: formData.phone,
+        address: formData.address,
+        note: formData.note,
+      },
+      paymentMethod: formData.paymentMethod,
       items: cartItems,
-      subTotal: getCartTotal(),
+      subTotal,
       deliveryFee,
-      total: finalTotal,
+      total,
     };
 
-    console.log("Order Placed:", orderData);
+    const response = await fetch("http://localhost:5000/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
+    });
 
-    clearCart();
+    const data = await response.json();
 
-    alert("🎉 Order placed successfully!");
-  };
+    if (response.ok) {
+      alert("Order placed successfully!");
+      clearCart();
+      console.log(data);
+    } else {
+      alert("Failed to place order");
+      console.error(data);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Something went wrong");
+  }
+};
 
   return (
     <div className="mt-5 rounded-2xl bg-white p-6 shadow-md">
@@ -128,7 +154,8 @@ const Checkout = ({ onBack }) => {
         </div>
 
         <button
-          type="submit"
+          type="button"
+          onClick={handlePlaceOrder}
           className="w-full rounded-xl bg-green-600 px-4 py-3.5 text-base font-bold text-white transition hover:bg-green-700 border-none"
         >
           Place Order
