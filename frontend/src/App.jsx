@@ -10,16 +10,14 @@ function App() {
 
   return (
     <CartProvider>
-      <div className="app-container">
-        
-
+      <div className="min-h-screen bg-gray-100 p-6">
         {!showCheckout ? (
-          <div className="layout">
-            <div className="menu-section">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_350px]">
+            <div>
               <Menu />
             </div>
 
-            <div className="cart-section">
+            <div>
               <Cart onCheckout={() => setShowCheckout(true)} />
             </div>
           </div>
