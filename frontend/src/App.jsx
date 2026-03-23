@@ -2,7 +2,7 @@
 import React from 'react';
 import AdminDashboard from './features/user-management/pages/AdminDashboard';
 
-import AdminNotificationPage from "./features/notification-management/pages/AdminNotificationPage";
+import AdminNotificationPage from "./features/delivery-managemnet/pages/AdminDeliveryPage";
 
 function App() {
   return <AdminNotificationPage />;
