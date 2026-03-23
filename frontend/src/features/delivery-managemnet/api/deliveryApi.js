@@ -15,3 +15,19 @@ export const createDelivery = async (deliveryData) => {
 export const updateDeliveryStatus = async (id, updatedData) => {
   return await deliveryApi.put(`/${id}/status`, updatedData);
 };
+
+export const getDeliveryStats = async () => {
+  return await deliveryApi.get("/stats/summary");
+};
+
+export const getDeliveriesByRider = async (riderId) => {
+  return await deliveryApi.get(`/rider/${riderId}`);
+};
+
+export const getRiderStats = async (riderId) => {
+  return await deliveryApi.get(`/rider/${riderId}/stats`);
+};
+
+export const updateDeliveryLocation = async (id, data) => {
+  return await deliveryApi.put(`/${id}/location`, data);
+};
