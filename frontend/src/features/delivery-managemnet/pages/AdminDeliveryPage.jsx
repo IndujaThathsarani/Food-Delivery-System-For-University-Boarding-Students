@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { getAllDeliveries, updateDeliveryStatus } from "../api/deliveryApi";
+import { generateDeliveryReport } from "../reports/generateDeliveryReport";
 import DeliveryForm from "../components/DeliveryForm";
 import DeliveryList from "../components/DeliveryList";
+
 
 function AdminDeliveryPage() {
   const [deliveries, setDeliveries] = useState([]);
@@ -68,6 +70,12 @@ function AdminDeliveryPage() {
             </div>
           </div>
 
+            <button
+              onClick={() => generateDeliveryReport(deliveries)}
+              className="mb-4 rounded-xl bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+            >
+              Download Delivery Report
+            </button>
           {loading ? (
             <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
               Loading deliveries...

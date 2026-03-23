@@ -11,3 +11,7 @@ export const getUserNotifications = async (userId) => {
 export const markNotificationAsRead = async (id) => {
   return await notificationApi.put(`/read/${id}`);
 };
+
+export const getAllNotifications = async () => {
+  return await notificationApi.get("/");
+};

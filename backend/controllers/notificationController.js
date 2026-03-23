@@ -39,8 +39,22 @@ const markAsRead = async (req, res) => {
   }
 };
 
+// Get all notifications (for admin)
+const getAllNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.find().sort({ createdAt: -1 });
+    res.status(200).json(notifications);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch notifications",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createNotification,
   getUserNotifications,
   markAsRead,
+  getAllNotifications,
 };

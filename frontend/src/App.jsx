@@ -2,10 +2,10 @@
 import React from 'react';
 import AdminDashboard from './features/user-management/pages/AdminDashboard';
 
-import CustomerNotificationPage from "./features/notification-management/pages/CustomerNotificationPage";
+import AdminNotificationPage from "./features/notification-management/pages/AdminNotificationPage";
 
 function App() {
-  return <CustomerNotificationPage />;
+  return <AdminNotificationPage />;
 }
 
 export default App;
