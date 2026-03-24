@@ -20,7 +20,6 @@ const Checkout = ({ onBack }) => {
   const subTotal = getCartTotal();
   const finalTotal = subTotal + deliveryFee;
 
-  // Validation rules
   const validate = () => {
     const newErrors = {};
 
@@ -49,11 +48,17 @@ const Checkout = ({ onBack }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error on change
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    // ── Phone: allow digits only, max 10 characters ──
+    if (name === "phone") {
+      const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, phone: digitsOnly }));
+      if (errors.phone) setErrors((prev) => ({ ...prev, phone: "" }));
+      return;
     }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handlePlaceOrder = async () => {
@@ -191,19 +196,26 @@ const Checkout = ({ onBack }) => {
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">
                     Phone Number <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="e.g. 0771234567"
-                    maxLength={10}
-                    className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition
-                      ${errors.phone
-                        ? "border-red-400 bg-red-50 focus:border-red-500"
-                        : "border-gray-200 bg-gray-50 focus:border-green-500 focus:bg-white"
-                      }`}
-                  />
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="e.g. 0771234567"
+                      inputMode="numeric"
+                      className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition
+                        ${errors.phone
+                          ? "border-red-400 bg-red-50 focus:border-red-500"
+                          : "border-gray-200 bg-gray-50 focus:border-green-500 focus:bg-white"
+                        }`}
+                    />
+                    {/* Live digit counter */}
+                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold tabular-nums
+                      ${formData.phone.length === 10 ? "text-green-500" : "text-gray-400"}`}>
+                      {formData.phone.length}/10
+                    </span>
+                  </div>
                   {errors.phone && (
                     <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
                       <span>⚠</span> {errors.phone}
