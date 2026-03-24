@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-
+const groupOrderRoutes = require("./routes/groupOrderRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
@@ -12,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/orders", orderRoutes);
+app.use("/api/group-orders", groupOrderRoutes);
 
 mongoose
   mongoose.connect(process.env.MONGODB_URI)

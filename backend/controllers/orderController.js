@@ -42,7 +42,6 @@ const createOrder = async (req, res) => {
 const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
-
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({
@@ -67,9 +66,15 @@ const updateOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    res.json(updatedOrder);
+    res.status(200).json({
+      message: "Order updated successfully",
+      order: updatedOrder,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: "Failed to update order",
+      error: error.message,
+    });
   }
 };
 
@@ -77,12 +82,26 @@ const deleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
 
-    await Order.findByIdAndDelete(id);
+    const deletedOrder = await Order.findByIdAndDelete(id);
 
-    res.json({ message: "Order deleted" });
+    if (!deletedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json({
+      message: "Order deleted successfully",
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: "Failed to delete order",
+      error: error.message,
+    });
   }
 };
 
-module.exports = { createOrder,getAllOrders,updateOrder,deleteOrder, };
+module.exports = {
+  createOrder,
+  getAllOrders,
+  updateOrder,
+  deleteOrder,
+};
