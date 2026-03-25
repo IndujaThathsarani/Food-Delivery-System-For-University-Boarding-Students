@@ -73,6 +73,9 @@ const GroupSummary = ({ groupCode, memberName, onBack }) => {
   const isLeader = groupData?.createdBy === memberName;
   const isCompleted = groupData?.status === "Completed";
 
+  // Payment is locked if the user is not the leader OR the order is completed
+  const paymentLocked = !isLeader || isCompleted;
+
   const finalizeGroupOrder = async () => {
     if (!groupData?.items?.length) {
       alert("Please add items before completing the group order.");
@@ -108,7 +111,6 @@ const GroupSummary = ({ groupCode, memberName, onBack }) => {
     overflow: "hidden",
   };
 
-  // Slide style — extend beyond edges to hide blur fringe
   const slideBase = {
     position: "absolute", top: "-10px", left: "-10px", right: "-10px", bottom: "-10px",
     backgroundSize: "cover",
@@ -138,13 +140,10 @@ const GroupSummary = ({ groupCode, memberName, onBack }) => {
           backgroundImage: `url(${SLIDE_IMAGES[current]})`,
           animation: "bg-fade-in 1.2s ease forwards, kb-zoom 5s ease forwards",
         }} />
-
-        {/* Subtle dark overlay */}
         <div style={{
           position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
           background: "rgba(0,0,0,0.35)",
         }} />
-
         <div style={{ position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 7, zIndex: 10 }}>
           {SLIDE_IMAGES.map((_, i) => (
             <span key={i} style={{
@@ -306,8 +305,14 @@ const GroupSummary = ({ groupCode, memberName, onBack }) => {
 
               {/* Payment method */}
               <div style={glassCard}>
-                <div style={{ background: "#f9fafb", borderBottom: "1px solid #f3f4f6", padding: "14px 20px" }}>
+                <div style={{ background: "#f9fafb", borderBottom: "1px solid #f3f4f6", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <h2 style={{ fontSize: 12, fontWeight: 800, color: "#111827", letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>💳 Payment Method</h2>
+                  {/* Lock badge shown to non-leaders */}
+                  {!isLeader && (
+                    <span style={{ fontSize: 11, fontWeight: 700, background: "#fef3c7", color: "#92400e", padding: "3px 10px", borderRadius: 999 }}>
+                      🔒 Leader only
+                    </span>
+                  )}
                 </div>
                 <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
                   {["Cash on Delivery", "Card Payment"].map((method) => (
@@ -316,15 +321,20 @@ const GroupSummary = ({ groupCode, memberName, onBack }) => {
                       border: `2px solid ${paymentMethod === method ? "#16a34a" : "#e5e7eb"}`,
                       background: paymentMethod === method ? "#f0fdf4" : "#f9fafb",
                       padding: "12px 16px",
-                      cursor: isCompleted ? "not-allowed" : "pointer",
-                      opacity: isCompleted ? 0.6 : 1,
+                      // ── locked for non-leaders and completed orders ──
+                      cursor: paymentLocked ? "not-allowed" : "pointer",
+                      opacity: paymentLocked ? 0.55 : 1,
                       transition: "all 0.2s",
                     }}>
-                      <input type="radio" name="paymentMethod" value={method}
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value={method}
                         checked={paymentMethod === method}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        disabled={isCompleted}
-                        style={{ accentColor: "#16a34a" }} />
+                        disabled={paymentLocked}
+                        style={{ accentColor: "#16a34a" }}
+                      />
                       <span style={{ fontSize: 14, fontWeight: 600, color: "#1f2937" }}>
                         {method === "Cash on Delivery" ? "💵 " : "💳 "}{method}
                       </span>
