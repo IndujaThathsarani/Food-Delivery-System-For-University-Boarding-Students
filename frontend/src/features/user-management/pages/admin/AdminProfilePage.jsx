@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { clearAuth, getUser } from '../../../../lib/auth';
+import { clearAuth, getToken, getUser, setAuth } from '../../../../lib/auth';
 import LandingLeafIcon from '../../components/LandingLeafIcon';
 import idPhoto1 from '../../mock/r1.png';
 
@@ -30,10 +31,53 @@ export default function AdminProfilePage() {
   const navigate = useNavigate();
   const [profileForm, setProfileForm] = useState(initialProfileForm);
   const [profileErrors, setProfileErrors] = useState({});
+  const [apiError, setApiError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [photoFile, setPhotoFile] = useState(null);
 
   const inputBase =
     'mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm font-normal text-black outline-none transition placeholder:font-normal placeholder:text-black/45 focus:border-[#16a34a] focus:ring-2 focus:ring-[#16a34a]/15';
   const labelClass = 'text-xs font-normal uppercase tracking-wide text-black';
+
+  const handleSave = async () => {
+    const u = getUser();
+    if (!u?.id) {
+      setApiError('No signed-in user found. Please log in again.');
+      return;
+    }
+
+    setApiError('');
+    setSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append('fullName', profileForm.name);
+      fd.append('email', profileForm.email);
+      fd.append('phone', profileForm.phone);
+      if (photoFile) fd.append('profilePhoto', photoFile);
+
+      const { data } = await axios.patch(`/api/users/${u.id}/profile`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const updatedUser = data?.user;
+      if (updatedUser) {
+        setAuth(getToken(), updatedUser);
+      }
+      setPhotoFile(null);
+      window.alert(data?.message || 'Profile updated.');
+    } catch (e) {
+      const data = e.response?.data;
+      const msg = data?.message || e.message || 'Could not update profile.';
+      const field = data?.field;
+      if (field) {
+        const mapped = field === 'fullName' ? 'name' : field;
+        setProfileErrors((prev) => ({ ...prev, [mapped]: msg }));
+      } else {
+        setApiError(msg);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] font-normal text-black">
@@ -90,6 +134,7 @@ export default function AdminProfilePage() {
             <h1 className="text-center font-sans text-xl leading-tight tracking-wide font-normal text-black md:text-2xl">
               YOUR PROFILE
             </h1>
+            {apiError ? <p className="mt-3 text-center text-sm text-red-600">{apiError}</p> : null}
             <form className="mt-5 space-y-4" onSubmit={(e) => e.preventDefault()} noValidate>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="relative shrink-0">
@@ -116,6 +161,7 @@ export default function AdminProfilePage() {
                       if (!selectedFile) return;
                       const previewUrl = URL.createObjectURL(selectedFile);
                       setProfileForm((prev) => ({ ...prev, photo: previewUrl }));
+                      setPhotoFile(selectedFile);
                       setProfileErrors((prev) => ({ ...prev, photo: undefined }));
                     }}
                   />
@@ -180,9 +226,11 @@ export default function AdminProfilePage() {
               <div className="flex flex-wrap items-center gap-2.5 pt-1">
                 <button
                   type="button"
+                  onClick={handleSave}
+                  disabled={saving}
                   className="inline-flex items-center gap-1.5 rounded-full bg-[#16a34a] px-5 py-2 text-xs font-normal text-white shadow-md transition hover:bg-[#15803d] md:text-sm"
                 >
-                  Save profile
+                  {saving ? 'Saving…' : 'Save profile'}
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>

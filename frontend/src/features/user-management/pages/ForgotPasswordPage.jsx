@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import LandingLeafIcon from '../components/LandingLeafIcon';
 
@@ -12,11 +13,17 @@ const btnPrimary =
   'w-full rounded-full bg-[#0B8E3A] py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#087532] hover:shadow-lg';
 
 function ForgotPasswordPage() {
-  const [step, setStep] = useState('email'); // 'email' | 'code'
+  const [step, setStep] = useState('email'); // 'email' | 'code' | 'reset'
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [codeError, setCodeError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [apiError, setApiError] = useState('');
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
 
   const validateEmail = () => {
@@ -32,28 +39,100 @@ function ForgotPasswordPage() {
     return true;
   };
 
-  const handleSendCode = (e) => {
+  const handleSendCode = async (e) => {
     e.preventDefault();
     if (!validateEmail()) return;
-    setSubmittedEmail(email.trim());
-    setStep('code');
-    setCode('');
-    setCodeError('');
+    setApiError('');
+    setSending(true);
+    try {
+      const mail = email.trim();
+      await axios.post('/api/password-reset/request', { email: mail });
+      setSubmittedEmail(mail);
+      setStep('code');
+      setCode('');
+      setCodeError('');
+    } catch (err) {
+      const data = err.response?.data;
+      const msg = data?.message || err.message || 'Could not send code.';
+      const field = data?.field;
+      if (field === 'email') setEmailError(msg);
+      else setApiError(msg);
+    } finally {
+      setSending(false);
+    }
   };
 
-  const handleVerifyCode = (e) => {
+  const handleVerifyCode = async (e) => {
     e.preventDefault();
     const digits = code.replace(/\D/g, '');
     if (digits.length !== 6) {
       setCodeError('Enter the 6-digit code from your email.');
       return;
     }
-    setCodeError('');
-    window.alert('Code verified (UI only — connect your backend to reset the password).');
+    setApiError('');
+    setVerifying(true);
+    try {
+      await axios.post('/api/password-reset/verify', { email: submittedEmail, code: digits });
+      setCodeError('');
+      setStep('reset');
+      setNewPassword('');
+      setPasswordError('');
+    } catch (err) {
+      const data = err.response?.data;
+      const msg = data?.message || err.message || 'Verification failed.';
+      const field = data?.field;
+      if (field === 'code') setCodeError(msg);
+      else if (field === 'email') setEmailError(msg);
+      else setApiError(msg);
+    } finally {
+      setVerifying(false);
+    }
   };
 
-  const handleResend = () => {
-    window.alert(`A new code would be sent to ${submittedEmail} (UI only).`);
+  const handleResend = async () => {
+    setApiError('');
+    setSending(true);
+    try {
+      await axios.post('/api/password-reset/request', { email: submittedEmail });
+    } catch (err) {
+      const data = err.response?.data;
+      setApiError(data?.message || err.message || 'Could not resend code.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setApiError('');
+    if (!newPassword.trim()) {
+      setPasswordError('New password is required.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters.');
+      return;
+    }
+    setResetting(true);
+    try {
+      await axios.post('/api/password-reset/reset', {
+        email: submittedEmail,
+        code,
+        newPassword,
+      });
+      window.alert('Password updated. Please log in.');
+    } catch (err) {
+      const data = err.response?.data;
+      const msg = data?.message || err.message || 'Reset failed.';
+      const field = data?.field;
+      if (field === 'newPassword') setPasswordError(msg);
+      else if (field === 'code') setCodeError(msg);
+      else if (field === 'email') setEmailError(msg);
+      else setApiError(msg);
+    } finally {
+      setResetting(false);
+    }
   };
 
   return (
@@ -111,9 +190,10 @@ function ForgotPasswordPage() {
                       />
                       {emailError ? <p className="mt-1 text-xs text-red-600">{emailError}</p> : null}
                     </div>
+                    {apiError ? <p className="text-sm text-red-600">{apiError}</p> : null}
 
                     <button type="submit" className={btnPrimary}>
-                      Send verification code
+                      {sending ? 'Sending…' : 'Send verification code'}
                     </button>
                   </form>
 
@@ -124,7 +204,7 @@ function ForgotPasswordPage() {
                     </Link>
                   </p>
                 </>
-              ) : (
+              ) : step === 'code' ? (
                 <>
                   <h1 className="text-center font-serif text-2xl font-semibold text-black md:text-3xl">
                     Enter verification code
@@ -157,15 +237,21 @@ function ForgotPasswordPage() {
                       />
                       {codeError ? <p className="mt-1 text-xs text-red-600">{codeError}</p> : null}
                     </div>
+                    {apiError ? <p className="text-sm text-red-600">{apiError}</p> : null}
 
                     <button type="submit" className={btnPrimary}>
-                      Verify &amp; continue
+                      {verifying ? 'Verifying…' : 'Verify & continue'}
                     </button>
                   </form>
 
                   <div className="mt-6 flex flex-col gap-3 text-center text-sm sm:flex-row sm:justify-center sm:gap-6">
-                    <button type="button" onClick={handleResend} className="font-medium text-black hover:underline">
-                      Resend code
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={sending}
+                      className="font-medium text-black hover:underline disabled:opacity-60"
+                    >
+                      {sending ? 'Resending…' : 'Resend code'}
                     </button>
                     <button
                       type="button"
@@ -173,12 +259,55 @@ function ForgotPasswordPage() {
                         setStep('email');
                         setCode('');
                         setCodeError('');
+                        setNewPassword('');
+                        setPasswordError('');
+                        setApiError('');
                       }}
                       className="font-medium text-black hover:underline"
                     >
                       Use a different email
                     </button>
                   </div>
+
+                  <p className="mt-8 text-center text-sm text-black">
+                    <Link to="/login" className={linkClass}>
+                      Back to login
+                    </Link>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-center font-serif text-2xl font-semibold text-black md:text-3xl">
+                    Set a new password
+                  </h1>
+                  <p className="mt-3 text-center text-sm leading-relaxed text-black">
+                    Enter a new password for <span className="font-medium">{submittedEmail}</span>.
+                  </p>
+
+                  <form className="mt-8 space-y-5" onSubmit={handleResetPassword} noValidate>
+                    <div>
+                      <label className={labelClass} htmlFor="new-password">
+                        New password
+                      </label>
+                      <input
+                        id="new-password"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => {
+                          setNewPassword(e.target.value);
+                          if (passwordError) setPasswordError('');
+                        }}
+                        placeholder="Enter new password"
+                        className={`mt-1.5 w-full rounded-2xl border bg-[#FAFAF8] px-4 py-2.5 text-black outline-none transition placeholder:text-black/40 ${passwordError ? inputErrorClass : inputOkClass}`}
+                      />
+                      {passwordError ? <p className="mt-1 text-xs text-red-600">{passwordError}</p> : null}
+                    </div>
+                    {apiError ? <p className="text-sm text-red-600">{apiError}</p> : null}
+
+                    <button type="submit" className={btnPrimary}>
+                      {resetting ? 'Updating…' : 'Update password'}
+                    </button>
+                  </form>
 
                   <p className="mt-8 text-center text-sm text-black">
                     <Link to="/login" className={linkClass}>
