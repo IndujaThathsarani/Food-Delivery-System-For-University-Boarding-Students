@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import StripePaymentForm from "./StripePaymentForm";
+import generateOrderInvoice from "../utils/generateOrderInvoice";
 
 
 
@@ -112,9 +113,12 @@ const Checkout = ({ onBack }) => {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess(true);
-        clearCart();
-      } else {
+  const savedOrder = data.order;
+
+  generateOrderInvoice(savedOrder);
+  setSuccess(true);
+  clearCart();
+} else {
         alert(data?.message || "Failed to place order. Please try again.");
       }
     } catch (error) {
@@ -190,11 +194,14 @@ const handleCardOrderSuccess = async () => {
     const data = await response.json();
 
     if (response.ok) {
-      setSuccess(true);
-      clearCart();
-      setStripeReady(false);
-      setClientSecret("");
-    } else {
+  const savedOrder = data.order;
+
+  generateOrderInvoice(savedOrder);
+  setSuccess(true);
+  clearCart();
+  setStripeReady(false);
+  setClientSecret("");
+} else {
       alert(data?.message || "Payment succeeded, but order saving failed.");
     }
   } catch (error) {

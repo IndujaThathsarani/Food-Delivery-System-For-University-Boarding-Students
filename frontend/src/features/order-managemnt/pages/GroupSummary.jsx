@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import GroupStripePaymentForm from "./GroupStripePaymentForm";
+import generateGroupOrderInvoice from "../utils/generateGroupOrderInvoice";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -97,8 +98,13 @@ const [stripeReady, setStripeReady] = useState(false);
       });
       const data = await response.json();
       if (response.ok) {
-        fetchGroup();
-      } else {
+  const updatedGroup = data.group;
+
+  generateGroupOrderInvoice(updatedGroup);
+
+  setLoading(false);
+  fetchGroup();
+} else {
         alert(data.message || "Failed to finalize group order.");
       }
     } catch {
@@ -213,11 +219,15 @@ const handleGroupCardPaymentSuccess = async () => {
 
     const data = await response.json();
 
-    if (response.ok) {
-      setStripeReady(false);
-      setClientSecret("");
-      fetchGroup();
-    } else {
+   if (response.ok) {
+  const updatedGroup = data.group;
+
+  generateGroupOrderInvoice(updatedGroup);
+
+  setStripeReady(false);
+  setClientSecret("");
+  fetchGroup();
+} else {
       alert(data.message || "Payment succeeded, but group order finalization failed.");
     }
   } catch (error) {
