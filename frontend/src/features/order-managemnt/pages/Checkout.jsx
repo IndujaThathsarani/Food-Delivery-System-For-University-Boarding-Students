@@ -1,8 +1,22 @@
 import React, { useContext, useState } from "react";
 import { CartContext } from "../context/CartContext";
+import { useMemo } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import StripePaymentForm from "./StripePaymentForm";
+
+
+
 
 const Checkout = ({ onBack }) => {
+
+ 
   const { cartItems, getCartTotal, clearCart } = useContext(CartContext);
+
+   const stripePromise = useMemo(
+  () => loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY),
+  []
+);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -15,6 +29,8 @@ const Checkout = ({ onBack }) => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [clientSecret, setClientSecret] = useState("");
+  const [stripeReady, setStripeReady] = useState(false);
 
   const deliveryFee = cartItems.length > 0 ? 400 : 0;
   const subTotal = getCartTotal();
@@ -46,20 +62,17 @@ const Checkout = ({ onBack }) => {
     return newErrors;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+ const handleChange = (e) => {
+  const { name, value } = e.target;
 
-    // ── Phone: allow digits only, max 10 characters ──
-    if (name === "phone") {
-      const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
-      setFormData((prev) => ({ ...prev, phone: digitsOnly }));
-      if (errors.phone) setErrors((prev) => ({ ...prev, phone: "" }));
-      return;
-    }
+  // 🔥 reset Stripe when payment method changes
+  if (name === "paymentMethod") {
+    setStripeReady(false);
+    setClientSecret("");
+  }
 
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
+  setFormData({ ...formData, [name]: value });
+};
 
   const handlePlaceOrder = async () => {
     const validationErrors = validate();
@@ -76,18 +89,19 @@ const Checkout = ({ onBack }) => {
     setLoading(true);
     try {
       const orderData = {
-        customer: {
-          fullName: formData.fullName.trim(),
-          phone: formData.phone.trim(),
-          address: formData.address.trim(),
-          note: formData.note.trim(),
-        },
-        paymentMethod: formData.paymentMethod,
-        items: cartItems,
-        subTotal,
-        deliveryFee,
-        total: finalTotal,
-      };
+  customer: {
+    fullName: formData.fullName.trim(),
+    phone: formData.phone.trim(),
+    address: formData.address.trim(),
+    note: formData.note.trim(),
+  },
+  paymentMethod: formData.paymentMethod,
+  paymentStatus: "Pending",
+  items: cartItems,
+  subTotal,
+  deliveryFee,
+  total: finalTotal,
+};
 
       const response = await fetch("http://localhost:5000/api/orders", {
         method: "POST",
@@ -111,6 +125,83 @@ const Checkout = ({ onBack }) => {
     }
   };
 
+  const handleCreatePaymentIntent = async () => {
+  const validationErrors = validate();
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+
+  if (cartItems.length === 0) {
+    alert("Your cart is empty. Please add items before paying.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch("http://localhost:5000/api/stripe/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amountLKR: finalTotal,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.clientSecret) {
+      setClientSecret(data.clientSecret);
+      setStripeReady(true);
+    } else {
+      alert(data.message || "Failed to start card payment.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong while preparing payment.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleCardOrderSuccess = async () => {
+  try {
+    const orderData = {
+      customer: {
+        fullName: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+        address: formData.address.trim(),
+        note: formData.note.trim(),
+      },
+      paymentMethod: "Card Payment",
+      paymentStatus: "Paid",
+      items: cartItems,
+      subTotal,
+      deliveryFee,
+      total: finalTotal,
+    };
+
+    const response = await fetch("http://localhost:5000/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderData),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setSuccess(true);
+      clearCart();
+      setStripeReady(false);
+      setClientSecret("");
+    } else {
+      alert(data?.message || "Payment succeeded, but order saving failed.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Payment succeeded, but something went wrong while saving the order.");
+  }
+};
   // Success Screen
   if (success) {
     return (
@@ -334,27 +425,37 @@ const Checkout = ({ onBack }) => {
               </div>
 
               {/* Place Order */}
-              <button
-                onClick={handlePlaceOrder}
-                disabled={loading}
-                className={`mt-5 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all duration-200 border-none cursor-pointer shadow-md shadow-green-200
-                  ${loading
-                    ? "bg-green-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
-                    Placing Order...
-                  </span>
-                ) : (
-                  "Place Order 🎉"
-                )}
-              </button>
+             {formData.paymentMethod === "Cash on Delivery" ? (
+  <button
+    onClick={handlePlaceOrder}
+    disabled={loading}
+    className={`mt-5 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all duration-200 border-none cursor-pointer shadow-md shadow-green-200
+      ${loading
+        ? "bg-green-400 cursor-not-allowed"
+        : "bg-green-600 hover:bg-green-700 active:scale-95"
+      }`}
+  >
+    {loading ? "Placing Order..." : "Place Order 🎉"}
+  </button>
+) : !stripeReady ? (
+  <button
+    onClick={handleCreatePaymentIntent}
+    disabled={loading}
+    className={`mt-5 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all duration-200 border-none cursor-pointer shadow-md shadow-green-200
+      ${loading
+        ? "bg-green-400 cursor-not-allowed"
+        : "bg-green-600 hover:bg-green-700 active:scale-95"
+      }`}
+  >
+    {loading ? "Preparing Payment..." : "Continue to Card Payment 💳"}
+  </button>
+) : (
+  <div className="mt-5">
+    <Elements stripe={stripePromise} options={{ clientSecret }}>
+      <StripePaymentForm onPaymentSuccess={handleCardOrderSuccess} />
+    </Elements>
+  </div>
+)}
 
               <p className="text-center text-xs text-gray-400 mt-3">
                 🔒 Safe & secure for boarding students

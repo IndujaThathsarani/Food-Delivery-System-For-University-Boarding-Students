@@ -2,7 +2,15 @@ const Order = require("../models/Order");
 
 const createOrder = async (req, res) => {
   try {
-    const { customer, paymentMethod, items, subTotal, deliveryFee, total } = req.body;
+    const {
+  customer,
+  paymentMethod,
+  paymentStatus,
+  items,
+  subTotal,
+  deliveryFee,
+  total,
+} = req.body;
 
     if (!customer || !customer.fullName || !customer.phone || !customer.address) {
       return res.status(400).json({ message: "Customer details are required" });
@@ -16,14 +24,15 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "Order items are required" });
     }
 
-    const newOrder = new Order({
-      customer,
-      paymentMethod,
-      items,
-      subTotal,
-      deliveryFee,
-      total,
-    });
+   const newOrder = new Order({
+  customer,
+  paymentMethod,
+  paymentStatus: paymentStatus || (paymentMethod === "Card Payment" ? "Paid" : "Pending"),
+  items,
+  subTotal,
+  deliveryFee,
+  total,
+});
 
     const savedOrder = await newOrder.save();
 
@@ -56,11 +65,14 @@ const updateOrder = async (req, res) => {
     const { id } = req.params;
     const { orderStatus, paymentStatus } = req.body;
 
-    const updatedOrder = await Order.findByIdAndUpdate(
-      id,
-      { orderStatus, paymentStatus },
-      { new: true }
-    );
+    const updateData = {};
+    if (orderStatus !== undefined) updateData.orderStatus = orderStatus;
+    if (paymentStatus !== undefined) updateData.paymentStatus = paymentStatus;
+
+    const updatedOrder = await Order.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedOrder) {
       return res.status(404).json({ message: "Order not found" });
@@ -77,7 +89,6 @@ const updateOrder = async (req, res) => {
     });
   }
 };
-
 const deleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
