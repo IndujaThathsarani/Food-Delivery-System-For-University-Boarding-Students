@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const PDFDocument = require('pdfkit');
 
 const router = express.Router();
 
@@ -30,6 +31,66 @@ const imageOnly = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter: imageOnly });
 const MAX_PRICE = 10000;
+
+function toNumber(value, fallback = 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function getStockQuantity(item) {
+    const stockText = String(item.stock || '').trim();
+    const numeric = Number(stockText);
+    if (!Number.isNaN(numeric)) return Math.max(0, numeric);
+    if (/out|unavailable|false|sold/i.test(stockText)) return 0;
+    return 0;
+}
+
+function getSoldQuantity(item) {
+    return Math.max(
+        0,
+        toNumber(item.soldQuantity),
+        toNumber(item.ordersCount),
+        toNumber(item.salesCount),
+    );
+}
+
+function resolveImagePath(imageValue) {
+    if (!imageValue || typeof imageValue !== 'string') return null;
+    const normalized = imageValue.replace(/\\/g, '/').replace(/^\/+/, '');
+    if (/^https?:\/\//i.test(normalized)) return null;
+    const absolutePath = path.join(__dirname, '..', normalized);
+    if (fs.existsSync(absolutePath)) return absolutePath;
+    return null;
+}
+
+function drawImageOrPlaceholder(doc, imagePath, x, y, width, height) {
+    if (imagePath) {
+        try {
+            doc.image(imagePath, x, y, { fit: [width, height], align: 'center', valign: 'center' });
+            return;
+        } catch (err) {
+            // Fall back to a placeholder if the image cannot be rendered.
+        }
+    }
+
+    doc
+        .save()
+        .lineWidth(0.8)
+        .strokeColor('#CBD5E1')
+        .rect(x, y, width, height)
+        .stroke()
+        .fontSize(8)
+        .fillColor('#64748B')
+        .text('No Image', x, y + height / 2 - 4, { width, align: 'center' })
+        .restore();
+}
+
+function ensurePageSpace(doc, neededHeight) {
+    if (doc.y + neededHeight > doc.page.height - 60) {
+        doc.addPage();
+        doc.fontSize(10).fillColor('#334155');
+    }
+}
 
 function buildPayload(req) {
     const normalizedFoodId = req.body.foodID || req.body.FoodID;
@@ -135,6 +196,151 @@ router.get('/:id', (req, res) => {
     FoodMenus.findById(req.params.id)
     .then(foodMenu => res.json(foodMenu))
     .catch(err => res.status(400).json({msg:"Error No food menu found", error: err.message}));
+});
+
+router.patch('/:id/rating', async (req, res) => {
+    try {
+        const stars = Number(req.body?.stars);
+        if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+            return res.status(400).json({ msg: 'Rating not saved', error: 'Stars must be an integer between 1 and 5' });
+        }
+
+        const food = await FoodMenus.findById(req.params.id);
+        if (!food) {
+            return res.status(404).json({ msg: 'Food item not found' });
+        }
+
+        food.ratingTotal = toNumber(food.ratingTotal) + stars;
+        food.ratingCount = toNumber(food.ratingCount) + 1;
+        food.ratingAverage = Number((food.ratingTotal / food.ratingCount).toFixed(2));
+
+        await food.save();
+
+        return res.json({
+            msg: 'Rating saved successfully',
+            ratingAverage: food.ratingAverage,
+            ratingCount: food.ratingCount,
+        });
+    } catch (err) {
+        return res.status(400).json({ msg: 'Rating not saved', error: err.message });
+    }
+});
+
+router.get('/reports/pdf', async (req, res) => {
+    try {
+        const foodItems = await FoodMenus.find().lean();
+        const availableFoods = foodItems.filter((item) => getStockQuantity(item) > 0);
+        const sellingFoods = foodItems
+            .map((item) => {
+                const soldQuantity = getSoldQuantity(item);
+                return {
+                    ...item,
+                    soldQuantity,
+                    salesTotal: soldQuantity * toNumber(item.price),
+                };
+            })
+            .filter((item) => item.soldQuantity > 0)
+            .sort((a, b) => b.soldQuantity - a.soldQuantity);
+
+        const salesGrandTotal = sellingFoods.reduce((sum, item) => sum + item.salesTotal, 0);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="food-report-${Date.now()}.pdf"`);
+
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+        doc.pipe(res);
+
+        doc
+            .fontSize(20)
+            .fillColor('#0F172A')
+            .text('Food Menu Report', { align: 'left' })
+            .moveDown(0.3)
+            .fontSize(10)
+            .fillColor('#475569')
+            .text(`Generated: ${new Date().toLocaleString()}`)
+            .moveDown(1);
+
+        doc
+            .fontSize(15)
+            .fillColor('#14532D')
+            .text(`Available Foods (${availableFoods.length})`)
+            .moveDown(0.5);
+
+        availableFoods.forEach((item, index) => {
+            ensurePageSpace(doc, 78);
+
+            const y = doc.y;
+            const imageX = 52;
+            const imageY = y + 2;
+            const imageWidth = 50;
+            const imageHeight = 50;
+            drawImageOrPlaceholder(doc, resolveImagePath(item.image), imageX, imageY, imageWidth, imageHeight);
+
+            const stockQty = getStockQuantity(item);
+            const textX = imageX + imageWidth + 12;
+            doc
+                .fontSize(11)
+                .fillColor('#0F172A')
+                .text(`${index + 1}. ${item.name || 'Unnamed Food'}`, textX, y)
+                .fontSize(9)
+                .fillColor('#334155')
+                .text(`ID: ${item.foodID || item.FoodID || '-'}`, textX)
+                .text(`Category: ${item.category || '-'}`, textX)
+                .text(`Price: LKR ${toNumber(item.price).toFixed(2)} | Quantity: ${stockQty}`, textX);
+
+            doc.moveDown(1.1);
+        });
+
+        ensurePageSpace(doc, 60);
+        doc
+            .moveDown(0.4)
+            .fontSize(15)
+            .fillColor('#7C2D12')
+            .text(`Selling Foods (${sellingFoods.length})`)
+            .moveDown(0.5);
+
+        if (sellingFoods.length === 0) {
+            doc
+                .fontSize(10)
+                .fillColor('#64748B')
+                .text('No sold food quantity data available yet.')
+                .moveDown(1);
+        } else {
+            sellingFoods.forEach((item, index) => {
+                ensurePageSpace(doc, 78);
+
+                const y = doc.y;
+                const imageX = 52;
+                const imageY = y + 2;
+                const imageWidth = 50;
+                const imageHeight = 50;
+                drawImageOrPlaceholder(doc, resolveImagePath(item.image), imageX, imageY, imageWidth, imageHeight);
+
+                const textX = imageX + imageWidth + 12;
+                doc
+                    .fontSize(11)
+                    .fillColor('#0F172A')
+                    .text(`${index + 1}. ${item.name || 'Unnamed Food'}`, textX, y)
+                    .fontSize(9)
+                    .fillColor('#334155')
+                    .text(`Sold Quantity: ${item.soldQuantity}`, textX)
+                    .text(`Unit Price: LKR ${toNumber(item.price).toFixed(2)}`, textX)
+                    .text(`Total: LKR ${toNumber(item.salesTotal).toFixed(2)}`, textX);
+
+                doc.moveDown(1.1);
+            });
+        }
+
+        ensurePageSpace(doc, 40);
+        doc
+            .fontSize(12)
+            .fillColor('#0F172A')
+            .text(`Grand Total (Selling Foods): LKR ${salesGrandTotal.toFixed(2)}`, { align: 'right' });
+
+        doc.end();
+    } catch (err) {
+        return res.status(500).json({ msg: 'Could not generate PDF report', error: err.message });
+    }
 });
 
 router.put('/:id', upload.single('image'), async (req, res) => {

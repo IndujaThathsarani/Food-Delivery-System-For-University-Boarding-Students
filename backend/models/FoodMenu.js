@@ -79,6 +79,27 @@ const foodMenuSchema = new mongoose.Schema({
     type: String,
     enum: ["Hot meal", "Cold meal", "Beverage", "Snack"],
     default: "Hot meal"
+  },
+  ratingTotal: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  ratingCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  ratingAverage: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5
+  },
+  soldQuantity: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 });
 

@@ -5,11 +5,24 @@ import AdminPanel from "./components/AdminPanel";
 import FilterBar from "./components/FilterBar";
 import FoodCard from "./components/FoodCard";
 import FoodDetailsModal from "./components/FoodDetailsModal";
-import { createFoodItem, deleteFoodItem, getFoodItems, updateFoodItem } from "./api";
+import {
+  createFoodItem,
+  deleteFoodItem,
+  downloadFoodReportPdf,
+  getFoodItems,
+  rateFoodItem,
+  updateFoodItem,
+} from "./api";
 
 const BUDGET_LIMIT = 350;
 const CART_STORAGE_KEY = "food_menu_cart";
 const OFFERS_STORAGE_KEY = "food_menu_limited_time_offers";
+const STUDENT_RATINGS_STORAGE_KEY = "food_menu_student_ratings";
+const SORT_OPTIONS = {
+  PRICE_ASC: "PRICE_ASC",
+  PRICE_DESC: "PRICE_DESC",
+  HIGHEST_RATED: "HIGHEST_RATED",
+};
 
 const DEFAULT_OFFERS = [
   {
@@ -114,9 +127,14 @@ function normalizeItem(item) {
     foodID: normalizedFoodId,
     category: normalizedCategory,
     price,
+    ratingAverage: Number(item.ratingAverage || 0),
+    ratingCount: Number(item.ratingCount || 0),
     isOutOfStock,
     lowStock,
-    isPopular: Boolean(item.popular) || Number(item.ordersCount || 0) >= 20,
+    isPopular:
+      Boolean(item.popular) ||
+      Number(item.ordersCount || 0) >= 20 ||
+      Number(item.ratingCount || 0) >= 10,
     isBudgetFriendly: /budget/i.test(normalizedCategory) || price <= BUDGET_LIMIT,
   };
 }
@@ -500,6 +518,7 @@ export default function FoodMenu({ isAdmin = false }) {
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy, setSortBy] = useState(SORT_OPTIONS.HIGHEST_RATED);
   const [budgetOnly, setBudgetOnly] = useState(false);
   const [hideOutOfStock, setHideOutOfStock] = useState(true);
   const [scheduleOnly, setScheduleOnly] = useState(false);
@@ -513,6 +532,7 @@ export default function FoodMenu({ isAdmin = false }) {
   const [editingOfferId, setEditingOfferId] = useState(null);
   const [offerForm, setOfferForm] = useState(EMPTY_OFFER_FORM);
   const [offerErrors, setOfferErrors] = useState([]);
+  const [studentRatings, setStudentRatings] = useState({});
 
   const currentMealLabel = useMemo(() => getCurrentMealLabel(), []);
 
@@ -585,6 +605,23 @@ export default function FoodMenu({ isAdmin = false }) {
     localStorage.setItem(OFFERS_STORAGE_KEY, JSON.stringify(offers));
   }, [offers]);
 
+  useEffect(() => {
+    try {
+      const storedRatings = localStorage.getItem(STUDENT_RATINGS_STORAGE_KEY);
+      if (!storedRatings) return;
+      const parsedRatings = JSON.parse(storedRatings);
+      if (parsedRatings && typeof parsedRatings === "object") {
+        setStudentRatings(parsedRatings);
+      }
+    } catch {
+      setStudentRatings({});
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STUDENT_RATINGS_STORAGE_KEY, JSON.stringify(studentRatings));
+  }, [studentRatings]);
+
   const featuredItems = useMemo(() => {
     if (!selectedFeaturedCategory) return items;
     return items.filter((item) => matchesFeaturedCategory(item, selectedFeaturedCategory.name));
@@ -593,7 +630,7 @@ export default function FoodMenu({ isAdmin = false }) {
   const filteredItems = useMemo(() => {
     const sourceItems = isCategoryPage ? featuredItems : items;
 
-    return sourceItems.filter((item) => {
+    const matched = sourceItems.filter((item) => {
       const searchMatch = item.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ?? false;
       const categoryMatch = isCategoryPage ? true : matchesCategory(item, selectedCategory);
       const budgetMatch = !budgetOnly || item.isBudgetFriendly;
@@ -602,7 +639,22 @@ export default function FoodMenu({ isAdmin = false }) {
 
       return searchMatch && categoryMatch && budgetMatch && stockMatch && scheduleMatch;
     });
-  }, [items, featuredItems, isCategoryPage, searchTerm, selectedCategory, budgetOnly, hideOutOfStock, scheduleOnly, currentMealLabel]);
+
+    const sorted = [...matched].sort((a, b) => {
+      if (sortBy === SORT_OPTIONS.PRICE_ASC) return a.price - b.price;
+      if (sortBy === SORT_OPTIONS.PRICE_DESC) return b.price - a.price;
+
+      if (b.ratingAverage !== a.ratingAverage) {
+        return b.ratingAverage - a.ratingAverage;
+      }
+      if (b.ratingCount !== a.ratingCount) {
+        return b.ratingCount - a.ratingCount;
+      }
+      return a.price - b.price;
+    });
+
+    return sorted;
+  }, [items, featuredItems, isCategoryPage, searchTerm, selectedCategory, budgetOnly, hideOutOfStock, scheduleOnly, currentMealLabel, sortBy]);
 
   const saveAction = async (action) => {
     setIsSaving(true);
@@ -628,6 +680,15 @@ export default function FoodMenu({ isAdmin = false }) {
   };
 
   const handleDelete = (id) => saveAction(() => deleteFoodItem(id));
+
+  const handleGenerateReport = async () => {
+    try {
+      setError("");
+      await downloadFoodReportPdf();
+    } catch (requestError) {
+      setError(requestError.response?.data?.msg || "Could not generate PDF report.");
+    }
+  };
 
   const handleAddToCart = (item) => {
     if (item.isOutOfStock) return;
@@ -663,6 +724,28 @@ export default function FoodMenu({ isAdmin = false }) {
 
   const handleBackFromModal = () => {
     setSelectedFoodForModal(null);
+  };
+
+  const handleRateItem = async (item, stars) => {
+    if (!item?._id || !Number.isInteger(stars) || stars < 1 || stars > 5) return;
+
+    setStudentRatings((prev) => ({ ...prev, [item._id]: stars }));
+
+    try {
+      const response = await rateFoodItem(item._id, stars);
+
+      setItems((prevItems) => prevItems.map((entry) => {
+        if (entry._id !== item._id) return entry;
+
+        return {
+          ...entry,
+          ratingAverage: Number(response?.ratingAverage ?? entry.ratingAverage ?? 0),
+          ratingCount: Number(response?.ratingCount ?? entry.ratingCount ?? 0),
+        };
+      }));
+    } catch (requestError) {
+      setError(requestError.response?.data?.error || "Could not save your rating.");
+    }
   };
 
   const resetOfferForm = () => {
@@ -848,6 +931,8 @@ export default function FoodMenu({ isAdmin = false }) {
               onSearchChange={setSearchTerm}
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
               budgetOnly={budgetOnly}
               onBudgetToggle={() => setBudgetOnly((prev) => !prev)}
               hideOutOfStock={hideOutOfStock}
@@ -889,6 +974,7 @@ export default function FoodMenu({ isAdmin = false }) {
               onUpdate={handleUpdate}
               onDelete={handleDelete}
               onRefresh={fetchItems}
+              onGeneratePdf={handleGenerateReport}
               initialCategory={selectedFeaturedCategory?.name || "Breakfast"}
               categoryLocked={isCategoryPage}
               categoryOptions={availableCategories}
@@ -917,6 +1003,8 @@ export default function FoodMenu({ isAdmin = false }) {
                         showAddToCart
                         onAddToCart={() => handleAddToCart(item)}
                         onImageClick={() => handleViewFoodDetails(item)}
+                        studentRating={Number(studentRatings[item._id] || 0)}
+                        onRate={(stars) => handleRateItem(item, stars)}
                       />
                     ))}
                   </section>

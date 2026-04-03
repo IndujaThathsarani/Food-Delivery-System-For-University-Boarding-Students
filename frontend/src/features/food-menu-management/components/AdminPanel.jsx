@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Download, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 
 const defaultForm = {
   foodID: "",
@@ -151,6 +151,7 @@ export default function AdminPanel({
   onUpdate,
   onDelete,
   onRefresh,
+  onGeneratePdf,
   isSaving,
   initialCategory = "Breakfast",
   categoryLocked = false,
@@ -242,6 +243,14 @@ export default function AdminPanel({
             >
               <RefreshCw size={16} />
               Refresh
+            </button>
+            <button
+              type="button"
+              onClick={onGeneratePdf}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+            >
+              <Download size={16} />
+              Generate PDF
             </button>
             {editingId && (
               <button

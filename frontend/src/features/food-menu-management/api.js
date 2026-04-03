@@ -37,6 +37,26 @@ export const updateFoodItem = async (id, payload) => {
   return response.data;
 };
 
+export const rateFoodItem = async (id, stars) => {
+  const response = await api.patch(`${FOOD_MENU_ENDPOINT}/${id}/rating`, { stars });
+  return response.data;
+};
+
+export const downloadFoodReportPdf = async () => {
+  const response = await api.get(`${FOOD_MENU_ENDPOINT}/reports/pdf`, {
+    responseType: "blob",
+  });
+
+  const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+  const anchor = document.createElement("a");
+  anchor.href = blobUrl;
+  anchor.download = `food-report-${Date.now()}.pdf`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(blobUrl);
+};
+
 export const deleteFoodItem = async (id) => {
   const response = await api.delete(`${FOOD_MENU_ENDPOINT}/${id}`);
   return response.data;

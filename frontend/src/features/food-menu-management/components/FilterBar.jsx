@@ -8,6 +8,8 @@ export default function FilterBar({
   onSearchChange,
   selectedCategory,
   onCategoryChange,
+  sortBy,
+  onSortChange,
   budgetOnly,
   onBudgetToggle,
   hideOutOfStock,
@@ -27,6 +29,22 @@ export default function FilterBar({
           placeholder="Search by food name"
           className="w-full rounded-2xl border border-green-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
         />
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <label htmlFor="sort-menu" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Sort Menu
+        </label>
+        <select
+          id="sort-menu"
+          value={sortBy}
+          onChange={(event) => onSortChange(event.target.value)}
+          className="w-full rounded-xl border border-green-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-green-500 sm:w-64"
+        >
+          <option value="PRICE_ASC">Price Low to High</option>
+          <option value="PRICE_DESC">Price High to Low</option>
+          <option value="HIGHEST_RATED">Highest Rated</option>
+        </select>
       </div>
 
       <div className="flex flex-wrap gap-2">

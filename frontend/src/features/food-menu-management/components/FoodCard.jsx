@@ -1,12 +1,20 @@
 import React from "react";
-import { Flame, Leaf, Package, Tag } from "lucide-react";
+import { Flame, Leaf, Package, Star, Tag } from "lucide-react";
 import { getImageUrl } from "../api";
 
 function formatCurrency(value) {
   return `LKR ${Number(value || 0).toFixed(2)}`;
 }
 
-export default function FoodCard({ item, disabledOutOfStock, showAddToCart = false, onAddToCart, onImageClick }) {
+export default function FoodCard({
+  item,
+  disabledOutOfStock,
+  showAddToCart = false,
+  onAddToCart,
+  onImageClick,
+  studentRating = 0,
+  onRate,
+}) {
   return (
     <article
       className={`group relative overflow-hidden rounded-3xl border border-white/45 bg-white/75 shadow-lg shadow-slate-900/5 backdrop-blur transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl ${
@@ -67,6 +75,36 @@ export default function FoodCard({ item, disabledOutOfStock, showAddToCart = fal
               Low Stock
             </span>
           )}
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-slate-600">Student Rating</p>
+            <p className="text-[11px] text-slate-500">
+              Avg {Number(item.ratingAverage || 0).toFixed(1)} ({Number(item.ratingCount || 0)})
+            </p>
+          </div>
+          <div className="mt-2 flex items-center gap-1">
+            {Array.from({ length: 5 }).map((_, index) => {
+              const starValue = index + 1;
+              const active = starValue <= studentRating;
+
+              return (
+                <button
+                  key={starValue}
+                  type="button"
+                  onClick={() => onRate?.(starValue)}
+                  aria-label={`Rate ${starValue} stars`}
+                  className="rounded-full p-0.5 transition hover:scale-110"
+                >
+                  <Star
+                    size={18}
+                    className={active ? "fill-yellow-400 text-yellow-400" : "text-slate-300"}
+                  />
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {showAddToCart && (
