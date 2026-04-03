@@ -8,10 +8,18 @@ const deliveryStaffPool = [
   { id: "RIDER003", name: "Saman Kumara", phone: "0755551234" },
 ];
 
+const generateOrderId = () => {
+  const timestamp = Date.now().toString().slice(-6);
+  const randomPart = Math.floor(1000 + Math.random() * 9000);
+  return `ORD-${timestamp}-${randomPart}`;
+};
+
 // Create a new delivery
 const createDelivery = async (req, res) => {
   try {
     const { orderId, studentId, currentLocation, notes } = req.body;
+    const customerId = (studentId || req.body.userId || "USER001").trim();
+    const resolvedOrderId = (orderId || "").trim() || generateOrderId();
 
     const randomStaff = deliveryStaffPool[0];
 
@@ -19,8 +27,8 @@ const createDelivery = async (req, res) => {
     const eta = new Date(now.getTime() + 30 * 60000);
 
     const delivery = await Delivery.create({
-      orderId,
-      studentId: studentId || "",
+      orderId: resolvedOrderId,
+      studentId: customerId,
       deliveryPersonId: randomStaff.id,
       deliveryPersonName: randomStaff.name,
       deliveryPersonPhone: randomStaff.phone,
@@ -31,13 +39,23 @@ const createDelivery = async (req, res) => {
       notes: notes || "",
     });
 
-    // Notify the rider when a delivery is assigned
+    // Notify rider
     await Notification.create({
       userId: randomStaff.id,
       title: "New Delivery Assigned",
-      message: `A new delivery (${orderId}) has been assigned to you.`,
+      message: `A new delivery (${resolvedOrderId}) has been assigned to you.`,
       type: "delivery",
     });
+
+    // Notify customer on assignment
+    if (customerId) {
+      await Notification.create({
+        userId: customerId,
+        title: "Delivery Assigned",
+        message: `Your order has been assigned to rider ${randomStaff.name}.`,
+        type: "delivery",
+      });
+    }
 
     res.status(201).json(delivery);
   } catch (error) {
@@ -76,7 +94,7 @@ const getDeliveryById = async (req, res) => {
 // Update delivery status
 const updateDeliveryStatus = async (req, res) => {
   try {
-    const { status, currentLocation } = req.body;
+    const { status, currentLocation, userId } = req.body;
 
     const delivery = await Delivery.findById(req.params.id);
 
@@ -86,6 +104,11 @@ const updateDeliveryStatus = async (req, res) => {
 
     delivery.status = status || delivery.status;
     delivery.currentLocation = currentLocation || delivery.currentLocation;
+
+    // Backfill customer id for older/incomplete records so notifications can be delivered.
+    if (!delivery.studentId && userId) {
+      delivery.studentId = userId;
+    }
 
     if (status === "Picked Up" && !delivery.pickedUpAt) {
       delivery.pickedUpAt = new Date();
@@ -104,7 +127,9 @@ const updateDeliveryStatus = async (req, res) => {
 
     let customerMessage = "";
 
-    if (status === "Picked Up") {
+    if (status === "Assigned") {
+      customerMessage = "Your order has been assigned to a rider.";
+    } else if (status === "Picked Up") {
       customerMessage = "Your order has been picked up by the rider.";
     } else if (status === "On the Way") {
       customerMessage = "Your order is now on the way.";
@@ -114,7 +139,6 @@ const updateDeliveryStatus = async (req, res) => {
       customerMessage = "Your delivery has been cancelled.";
     }
 
-    // Notify customer only for delivery progress updates
     if (delivery.studentId && customerMessage) {
       await Notification.create({
         userId: delivery.studentId,

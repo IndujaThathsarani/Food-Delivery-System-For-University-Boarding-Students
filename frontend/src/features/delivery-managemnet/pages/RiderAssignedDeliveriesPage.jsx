@@ -40,7 +40,7 @@ function RiderAssignedDeliveriesPage() {
     try {
       await updateDeliveryStatus(deliveryId, {
         status,
-        userId: studentId || "",
+        userId: studentId || "USER001",
       });
       fetchDeliveries();
     } catch (error) {

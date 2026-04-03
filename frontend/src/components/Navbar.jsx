@@ -10,23 +10,23 @@ function Navbar() {
   if (location.pathname.startsWith("/admin")) {
     role = "admin";
     userId = "";
-  } else if (location.pathname.startsWith("/customer")) {
-    role = "customer";
-    userId = "USER001";
   } else if (location.pathname.startsWith("/rider")) {
     role = "rider";
     userId = "RIDER001";
+  } else if (location.pathname.startsWith("/customer")) {
+    role = "customer";
+    userId = "USER001";
   }
 
   const navClass = ({ isActive }) =>
     `rounded-lg px-3 py-2 transition ${
       isActive
-        ? "bg-white/20 font-semibold text-yellow-300"
-        : "text-white hover:bg-white/10 hover:text-orange-300"
+        ? "bg-white/20 font-semibold text-lime-200"
+        : "text-white hover:bg-white/10 hover:text-emerald-200"
     }`;
 
   return (
-    <div className="bg-gray-900 px-6 py-4 text-white shadow-md">
+    <div className="bg-gradient-to-r from-emerald-700 via-green-700 to-teal-700 px-6 py-4 text-white shadow-md">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-lg font-bold">Food Delivery System</h1>
 

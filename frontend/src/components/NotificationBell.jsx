@@ -18,10 +18,12 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
       let response;
 
       if (role === "admin") {
-  response = await getAllNotifications();
-} else if (role === "customer" || role === "rider") {
-  response = await getUserNotifications(userId);
-}
+        response = await getAllNotifications();
+      } else if (role === "customer" || role === "rider") {
+        response = await getUserNotifications(userId);
+      } else {
+        response = { data: [] };
+      }
 
       const data = Array.isArray(response.data) ? response.data : [];
 
@@ -83,6 +85,12 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
           item._id === id ? { ...item, isRead: true } : item
         )
       );
+      // Notify other parts of the app (e.g., dashboard) that notifications changed
+      try {
+        window.dispatchEvent(new Event("notificationsUpdated"));
+      } catch (e) {
+        // ignore in non-browser or if dispatch fails
+      }
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
     }

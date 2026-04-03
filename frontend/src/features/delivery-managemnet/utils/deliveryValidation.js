@@ -5,6 +5,10 @@ export const validateDeliveryForm = (values) => {
     errors.orderId = "Order ID is required";
   }
 
+  if (!values.studentId || values.studentId.trim() === "") {
+    errors.studentId = "Student ID is required";
+  }
+
   if (!values.deliveryPersonName || values.deliveryPersonName.trim() === "") {
     errors.deliveryPersonName = "Delivery person name is required";
   } else if (values.deliveryPersonName.trim().length < 3) {

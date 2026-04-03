@@ -98,7 +98,7 @@ function RiderDashboardPage() {
 
       await updateDeliveryStatus(delivery._id, {
         status: nextStatus,
-        userId: delivery.studentId || "",
+        userId: delivery.studentId || "USER001",
       });
 
       fetchDashboardData();
@@ -116,7 +116,7 @@ function RiderDashboardPage() {
     try {
       await updateDeliveryStatus(delivery._id, {
         status: "Cancelled",
-        userId: delivery.studentId || "",
+        userId: delivery.studentId || "USER001",
       });
 
       fetchDashboardData();

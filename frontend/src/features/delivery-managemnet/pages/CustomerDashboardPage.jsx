@@ -5,6 +5,7 @@ import DeliveryStatusBadge from "../components/DeliveryStatusBadge";
 
 function CustomerDashboardPage() {
   const userId = "USER001";
+
   const [deliveries, setDeliveries] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,62 +13,85 @@ function CustomerDashboardPage() {
 
   const deliveriesPerPage = 5;
 
-  const fetchDashboardData = async () => {
+  const fetchDeliveries = async () => {
     try {
-      setLoading(true);
-
-      const [deliveryRes, notificationRes] = await Promise.all([
-        getAllDeliveries(),
-        getUserNotifications(userId),
-      ]);
-
+      const deliveryRes = await getAllDeliveries();
       const allDeliveries = Array.isArray(deliveryRes.data) ? deliveryRes.data : [];
 
       const userDeliveries = allDeliveries
-        .filter((delivery) => delivery.studentId === userId || delivery.studentId === "")
+        .filter((delivery) => delivery.studentId === userId)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       setDeliveries(userDeliveries);
-      setNotifications(Array.isArray(notificationRes.data) ? notificationRes.data : []);
-      setCurrentPage(1);
     } catch (error) {
-      console.error("Failed to load customer dashboard:", error);
-      alert("Failed to load customer dashboard");
-    } finally {
-      setLoading(false);
+      console.error("Failed to load deliveries:", error);
+      setDeliveries([]);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const notificationRes = await getUserNotifications(userId);
+      const userNotifications = Array.isArray(notificationRes.data)
+        ? notificationRes.data
+        : [];
+
+      const sortedNotifications = [...userNotifications].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      setNotifications(sortedNotifications);
+    } catch (error) {
+      console.error("Failed to load notifications:", error);
+      setNotifications([]);
     }
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    const initialLoad = async () => {
+      setLoading(true);
+      await Promise.all([fetchDeliveries(), fetchNotifications()]);
+      setLoading(false);
+    };
+
+    initialLoad();
+
+    const interval = setInterval(() => {
+      fetchNotifications();
+      fetchDeliveries();
+    }, 5000);
+
+    // Listen for manual notification updates (e.g., when marked read)
+    const onNotificationsUpdated = () => fetchNotifications();
+    window.addEventListener("notificationsUpdated", onNotificationsUpdated);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("notificationsUpdated", onNotificationsUpdated);
+    };
   }, []);
 
-  const unreadCount = notifications.filter((item) => !item.isRead).length;
-
-  const totalPages = Math.ceil(deliveries.length / deliveriesPerPage);
+  const totalPages = Math.ceil(deliveries.length / deliveriesPerPage) || 1;
 
   const paginatedDeliveries = useMemo(() => {
     const startIndex = (currentPage - 1) * deliveriesPerPage;
-    const endIndex = startIndex + deliveriesPerPage;
-    return deliveries.slice(startIndex, endIndex);
+    return deliveries.slice(startIndex, startIndex + deliveriesPerPage);
   }, [deliveries, currentPage]);
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
 
   const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
   };
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 px-4 py-8">
-        <div className="mx-auto max-w-6xl rounded-2xl bg-white p-8 shadow-sm">
+        <div className="mx-auto max-w-6xl rounded-2xl bg-white p-8 text-black shadow-sm">
           Loading customer dashboard...
         </div>
       </div>
@@ -75,39 +99,33 @@ function CustomerDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-8">
+    <div className="min-h-screen bg-gray-100 px-4 py-8 text-black">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 rounded-3xl bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white shadow-lg">
           <h1 className="text-3xl font-bold">Customer Dashboard</h1>
           <p className="mt-2 text-sm text-orange-100">
-            Track your deliveries, rider details, ETA, and recent updates in one place.
+            Track your deliveries and recent updates in one place.
           </p>
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">My Deliveries</p>
-            <p className="mt-2 text-3xl font-bold text-gray-900">
-              {deliveries.length}
-            </p>
-          </div>
-
-          <div className="rounded-2xl bg-orange-50 p-5 shadow-sm">
-            <p className="text-sm text-gray-500">Unread Notifications</p>
-            <p className="mt-2 text-3xl font-bold text-orange-700">
-              {unreadCount}
-            </p>
+            <p className="mt-2 text-3xl font-bold text-gray-900">{deliveries.length}</p>
           </div>
 
           <div className="rounded-2xl bg-blue-50 p-5 shadow-sm">
             <p className="text-sm text-gray-500">Active Deliveries</p>
             <p className="mt-2 text-3xl font-bold text-blue-700">
-              {
-                deliveries.filter((d) =>
-                  ["Assigned", "Picked Up", "On the Way"].includes(d.status)
-                ).length
-              }
+              {deliveries.filter((d) =>
+                ["Assigned", "Picked Up", "On the Way"].includes(d.status)
+              ).length}
             </p>
+          </div>
+
+          <div className="rounded-2xl bg-orange-50 p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Unread Notifications</p>
+            <p className="mt-2 text-3xl font-bold text-orange-700">{unreadCount}</p>
           </div>
         </div>
 
@@ -115,21 +133,17 @@ function CustomerDashboardPage() {
           <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">My Deliveries</h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Your current and past delivery records.
-              </p>
+              <p className="mt-1 text-sm text-gray-500">Showing newest deliveries first.</p>
             </div>
 
-            {deliveries.length > 0 && (
-              <div className="text-sm text-gray-500">
-                Page {currentPage} of {totalPages || 1}
-              </div>
-            )}
+            <div className="text-sm text-gray-500">
+              Page {currentPage} of {totalPages}
+            </div>
           </div>
 
           {deliveries.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
-              No deliveries found.
+              No deliveries found for this customer.
             </div>
           ) : (
             <>
@@ -145,7 +159,7 @@ function CustomerDashboardPage() {
                           Order ID: {delivery.orderId}
                         </h2>
                         <p className="mt-1 text-sm text-gray-500">
-                          Rider: {delivery.deliveryPersonName}
+                          Rider: {delivery.deliveryPersonName || "Not assigned"}
                         </p>
                       </div>
 
@@ -155,11 +169,11 @@ function CustomerDashboardPage() {
                     <div className="grid grid-cols-1 gap-3 text-sm text-gray-700 md:grid-cols-2">
                       <p>
                         <span className="font-semibold text-gray-900">Rider Phone:</span>{" "}
-                        {delivery.deliveryPersonPhone}
+                        {delivery.deliveryPersonPhone || "Not available"}
                       </p>
                       <p>
                         <span className="font-semibold text-gray-900">Current Location:</span>{" "}
-                        {delivery.currentLocation}
+                        {delivery.currentLocation || "Not available"}
                       </p>
                       <p>
                         <span className="font-semibold text-gray-900">ETA:</span>{" "}
@@ -193,7 +207,7 @@ function CustomerDashboardPage() {
 
                 <button
                   onClick={handleNextPage}
-                  disabled={currentPage === totalPages || totalPages === 0}
+                  disabled={currentPage === totalPages}
                   className="rounded-xl bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Next
@@ -207,7 +221,7 @@ function CustomerDashboardPage() {
           <div className="mb-5">
             <h2 className="text-2xl font-bold text-gray-900">Recent Notifications</h2>
             <p className="mt-1 text-sm text-gray-500">
-              Latest delivery-related updates for your account.
+              Your latest 5 delivery-related notifications.
             </p>
           </div>
 
@@ -239,6 +253,7 @@ function CustomerDashboardPage() {
                   </div>
 
                   <p className="text-sm text-gray-600">{notification.message}</p>
+
                   <p className="mt-2 text-xs text-gray-400">
                     {new Date(notification.createdAt).toLocaleString()}
                   </p>

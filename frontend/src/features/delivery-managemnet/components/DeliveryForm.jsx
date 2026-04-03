@@ -2,8 +2,15 @@ import { useState } from "react";
 import { createDelivery } from "../api/deliveryApi";
 import { validateDeliveryForm } from "../utils/deliveryValidation";
 
+const generateOrderId = () => {
+  const timestamp = Date.now().toString().slice(-6);
+  const randomPart = Math.floor(1000 + Math.random() * 9000);
+  return `ORD-${timestamp}-${randomPart}`;
+};
+
 const initialFormState = {
-  orderId: "",
+  orderId: generateOrderId(),
+  studentId: "USER001",
   deliveryPersonName: "",
   deliveryPersonPhone: "",
   status: "Assigned",
@@ -44,6 +51,7 @@ function DeliveryForm({ onDeliveryCreated }) {
       await createDelivery({
         ...formData,
         orderId: formData.orderId.trim(),
+        studentId: formData.studentId.trim(),
         deliveryPersonName: formData.deliveryPersonName.trim(),
         deliveryPersonPhone: formData.deliveryPersonPhone.trim(),
         currentLocation: formData.currentLocation.trim(),
@@ -51,7 +59,10 @@ function DeliveryForm({ onDeliveryCreated }) {
       });
 
       alert("Delivery created successfully");
-      setFormData(initialFormState);
+      setFormData({
+        ...initialFormState,
+        orderId: generateOrderId(),
+      });
 
       if (onDeliveryCreated) {
         onDeliveryCreated();
@@ -82,12 +93,41 @@ function DeliveryForm({ onDeliveryCreated }) {
             type="text"
             name="orderId"
             value={formData.orderId}
-            onChange={handleChange}
-            placeholder="Enter order ID"
+            readOnly
+            placeholder="Auto generated order ID"
             className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
           />
           {errors.orderId && (
             <p className="mt-2 text-sm text-red-500">{errors.orderId}</p>
+          )}
+          <button
+            type="button"
+            onClick={() =>
+              setFormData((prev) => ({
+                ...prev,
+                orderId: generateOrderId(),
+              }))
+            }
+            className="mt-2 text-xs font-semibold text-orange-600 hover:text-orange-700"
+          >
+            Regenerate Order ID
+          </button>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
+            Student ID
+          </label>
+          <input
+            type="text"
+            name="studentId"
+            value={formData.studentId}
+            onChange={handleChange}
+            placeholder="Enter customer student ID (e.g., USER001)"
+            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+          />
+          {errors.studentId && (
+            <p className="mt-2 text-sm text-red-500">{errors.studentId}</p>
           )}
         </div>
 
