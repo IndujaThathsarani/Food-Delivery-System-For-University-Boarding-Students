@@ -54,18 +54,32 @@ const deliverySchema = new mongoose.Schema(
       trim: true,
     },
     latitude: {
-  type: Number,
-  default: null,
-},
-longitude: {
-  type: Number,
-  default: null,
-},
+    type: Number,
+    default: null,
+      },
+
+    longitude: {
+      type: Number,
+      default: null,
+    },
 
     notes: {
       type: String,
       default: "",
       trim: true,
+    },
+
+    pickupLocation: {
+      lat: Number,
+      lng: Number
+    },
+    deliveryLocation: {
+      lat: Number,
+      lng: Number
+    },
+    riderLocation: {
+      lat: Number,
+      lng: Number
     },
     
     deliveryDurationMinutes: {

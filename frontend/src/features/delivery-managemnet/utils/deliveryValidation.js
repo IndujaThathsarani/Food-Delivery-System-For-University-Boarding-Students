@@ -1,24 +1,36 @@
 export const validateDeliveryForm = (values) => {
   const errors = {};
 
+  const validateLatitude = (value, fieldName) => {
+    if (value === "" || value === null || value === undefined) {
+      errors[fieldName] = "This field is required";
+      return;
+    }
+
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < -90 || parsed > 90) {
+      errors[fieldName] = "Latitude must be a number between -90 and 90";
+    }
+  };
+
+  const validateLongitude = (value, fieldName) => {
+    if (value === "" || value === null || value === undefined) {
+      errors[fieldName] = "This field is required";
+      return;
+    }
+
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < -180 || parsed > 180) {
+      errors[fieldName] = "Longitude must be a number between -180 and 180";
+    }
+  };
+
   if (!values.orderId || values.orderId.trim() === "") {
     errors.orderId = "Order ID is required";
   }
 
   if (!values.studentId || values.studentId.trim() === "") {
     errors.studentId = "Student ID is required";
-  }
-
-  if (!values.deliveryPersonName || values.deliveryPersonName.trim() === "") {
-    errors.deliveryPersonName = "Delivery person name is required";
-  } else if (values.deliveryPersonName.trim().length < 3) {
-    errors.deliveryPersonName = "Name must be at least 3 characters";
-  }
-
-  if (!values.deliveryPersonPhone || values.deliveryPersonPhone.trim() === "") {
-    errors.deliveryPersonPhone = "Phone number is required";
-  } else if (!/^\d{10}$/.test(values.deliveryPersonPhone.trim())) {
-    errors.deliveryPersonPhone = "Phone number must be exactly 10 digits";
   }
 
   if (!values.status || values.status.trim() === "") {
@@ -28,6 +40,9 @@ export const validateDeliveryForm = (values) => {
   if (!values.currentLocation || values.currentLocation.trim() === "") {
     errors.currentLocation = "Current location is required";
   }
+
+  validateLatitude(values.destinationLat, "destinationLat");
+  validateLongitude(values.destinationLng, "destinationLng");
 
   if (
     values.notes &&

@@ -2,9 +2,23 @@ import { useEffect, useMemo, useState } from "react";
 import { getAllDeliveries } from "../api/deliveryApi";
 import { getUserNotifications } from "../../notification-management/api/notificationApi";
 import DeliveryStatusBadge from "../components/DeliveryStatusBadge";
+import LiveMap from "../../../components/LiveMap";
 
 function CustomerDashboardPage() {
   const userId = "USER001";
+
+  const parseCoords = (location) => {
+    if (!location) return null;
+
+    const lat = Number(location.lat);
+    const lng = Number(location.lng);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return null;
+    }
+
+    return [lat, lng];
+  };
 
   const [deliveries, setDeliveries] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -61,7 +75,6 @@ function CustomerDashboardPage() {
       fetchDeliveries();
     }, 5000);
 
-    // Listen for manual notification updates (e.g., when marked read)
     const onNotificationsUpdated = () => fetchNotifications();
     window.addEventListener("notificationsUpdated", onNotificationsUpdated);
 
@@ -101,6 +114,7 @@ function CustomerDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-100 px-4 py-8 text-black">
       <div className="mx-auto max-w-6xl">
+        {/* HEADER */}
         <div className="mb-8 rounded-3xl bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white shadow-lg">
           <h1 className="text-3xl font-bold">Customer Dashboard</h1>
           <p className="mt-2 text-sm text-orange-100">
@@ -108,6 +122,7 @@ function CustomerDashboardPage() {
           </p>
         </div>
 
+        {/* STATS */}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">My Deliveries</p>
@@ -129,138 +144,50 @@ function CustomerDashboardPage() {
           </div>
         </div>
 
+        {/* DELIVERY LIST */}
         <div className="mb-8 rounded-3xl bg-white p-6 shadow-sm">
-          <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">My Deliveries</h2>
-              <p className="mt-1 text-sm text-gray-500">Showing newest deliveries first.</p>
-            </div>
-
-            <div className="text-sm text-gray-500">
+          <div className="mb-5 flex justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">My Deliveries</h2>
+            <p className="text-sm text-gray-500">
               Page {currentPage} of {totalPages}
-            </div>
-          </div>
-
-          {deliveries.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
-              No deliveries found for this customer.
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 gap-5">
-                {paginatedDeliveries.map((delivery) => (
-                  <div
-                    key={delivery._id}
-                    className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
-                  >
-                    <div className="mb-4 flex items-start justify-between gap-4">
-                      <div>
-                        <h2 className="text-xl font-bold text-gray-900">
-                          Order ID: {delivery.orderId}
-                        </h2>
-                        <p className="mt-1 text-sm text-gray-500">
-                          Rider: {delivery.deliveryPersonName || "Not assigned"}
-                        </p>
-                      </div>
-
-                      <DeliveryStatusBadge status={delivery.status} />
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3 text-sm text-gray-700 md:grid-cols-2">
-                      <p>
-                        <span className="font-semibold text-gray-900">Rider Phone:</span>{" "}
-                        {delivery.deliveryPersonPhone || "Not available"}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-gray-900">Current Location:</span>{" "}
-                        {delivery.currentLocation || "Not available"}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-gray-900">ETA:</span>{" "}
-                        {delivery.estimatedDeliveryTime
-                          ? new Date(delivery.estimatedDeliveryTime).toLocaleString()
-                          : "Not available"}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-gray-900">Assigned At:</span>{" "}
-                        {delivery.assignedAt
-                          ? new Date(delivery.assignedAt).toLocaleString()
-                          : "Not available"}
-                      </p>
-                      <p className="md:col-span-2">
-                        <span className="font-semibold text-gray-900">Notes:</span>{" "}
-                        {delivery.notes || "No notes"}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 flex items-center justify-center gap-3">
-                <button
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 1}
-                  className="rounded-xl bg-gray-200 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Back
-                </button>
-
-                <button
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                  className="rounded-xl bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="rounded-3xl bg-white p-6 shadow-sm">
-          <div className="mb-5">
-            <h2 className="text-2xl font-bold text-gray-900">Recent Notifications</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Your latest 5 delivery-related notifications.
             </p>
           </div>
 
-          {notifications.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
-              No notifications available.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {notifications.slice(0, 5).map((notification) => (
-                <div
-                  key={notification._id}
-                  className={`rounded-2xl border p-4 ${
-                    notification.isRead
-                      ? "border-gray-200 bg-white"
-                      : "border-orange-200 bg-orange-50"
-                  }`}
-                >
-                  <div className="mb-1 flex items-center justify-between gap-3">
-                    <h3 className="text-sm font-semibold text-gray-900">
-                      {notification.title}
-                    </h3>
+          <div className="grid grid-cols-1 gap-5">
+            {paginatedDeliveries.map((delivery) => {
+              const isActive = ["Assigned", "Picked Up", "On the Way"].includes(delivery.status);
 
-                    {!notification.isRead && (
-                      <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700">
-                        New
-                      </span>
-                    )}
-                  </div>
+              // 🔥 Extract coordinates safely
+              const pickupCoords = parseCoords(delivery.pickupLocation);
+              const destinationCoords = parseCoords(delivery.deliveryLocation);
+              const riderCoords = parseCoords(delivery.riderLocation)
+                || (Number.isFinite(Number(delivery.latitude))
+                  && Number.isFinite(Number(delivery.longitude))
+                  ? [Number(delivery.latitude), Number(delivery.longitude)]
+                  : pickupCoords);
 
-                  <p className="text-sm text-gray-600">{notification.message}</p>
+              return (
+                <div key={delivery._id} className="rounded-2xl border p-6 shadow-sm">
+                  <h2 className="text-xl font-bold">
+                    Order ID: {delivery.orderId}
+                  </h2>
 
-                  <p className="mt-2 text-xs text-gray-400">
-                    {new Date(notification.createdAt).toLocaleString()}
-                  </p>
+                  <DeliveryStatusBadge status={delivery.status} />
+
+                  {/* 🔥 MAP */}
+                  {isActive && (
+                    <div className="mt-4">
+                      <LiveMap
+                        pickup={pickupCoords}
+                        destination={destinationCoords}
+                        rider={riderCoords}
+                      />
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

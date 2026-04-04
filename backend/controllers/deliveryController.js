@@ -6,7 +6,56 @@ const deliveryStaffPool = [
   { id: "RIDER001", name: "Kamal Perera", phone: "0771234567" },
   { id: "RIDER002", name: "Nimal Silva", phone: "0719876543" },
   { id: "RIDER003", name: "Saman Kumara", phone: "0755551234" },
+  { id: "RIDER004", name: "Dasun Fernando", phone: "0763344556" },
+  { id: "RIDER005", name: "Ravindu Jayasekara", phone: "0789988776" },
 ];
+
+let autoAssignPointer = 0;
+
+const getNextAutoAssignRider = () => {
+  if (deliveryStaffPool.length === 0) return null;
+
+  const rider = deliveryStaffPool[autoAssignPointer % deliveryStaffPool.length];
+  autoAssignPointer += 1;
+  return rider;
+};
+
+const scheduleAutoAssignment = ({ deliveryId, orderId, customerId }) => {
+  setTimeout(async () => {
+    try {
+      const delivery = await Delivery.findById(deliveryId);
+
+      if (!delivery) return;
+      if (delivery.deliveryPersonId) return;
+
+      const autoAssignedRider = getNextAutoAssignRider();
+      if (!autoAssignedRider) return;
+
+      delivery.deliveryPersonId = autoAssignedRider.id;
+      delivery.deliveryPersonName = autoAssignedRider.name;
+      delivery.deliveryPersonPhone = autoAssignedRider.phone;
+      await delivery.save();
+
+      await Notification.create({
+        userId: autoAssignedRider.id,
+        title: "New Delivery Assigned",
+        message: `A new delivery (${orderId}) has been auto-assigned to you.`,
+        type: "delivery",
+      });
+
+      if (customerId) {
+        await Notification.create({
+          userId: customerId,
+          title: "Delivery Assigned",
+          message: `Your order has been auto-assigned to rider ${autoAssignedRider.name}.`,
+          type: "delivery",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to auto-assign rider:", error.message);
+    }
+  }, 5000);
+};
 
 const generateOrderId = () => {
   const timestamp = Date.now().toString().slice(-6);
@@ -17,11 +66,23 @@ const generateOrderId = () => {
 // Create a new delivery
 const createDelivery = async (req, res) => {
   try {
-    const { orderId, studentId, currentLocation, notes } = req.body;
+    const {
+      orderId,
+      studentId,
+      deliveryPersonId,
+      currentLocation,
+      notes,
+      pickupLocation,
+      deliveryLocation,
+      latitude,
+      longitude,
+    } = req.body;
     const customerId = (studentId || req.body.userId || "USER001").trim();
     const resolvedOrderId = (orderId || "").trim() || generateOrderId();
 
-    const randomStaff = deliveryStaffPool[0];
+    const selectedRider = deliveryStaffPool.find(
+      (rider) => rider.id === (deliveryPersonId || "").trim()
+    );
 
     const now = new Date();
     const eta = new Date(now.getTime() + 30 * 60000);
@@ -29,31 +90,54 @@ const createDelivery = async (req, res) => {
     const delivery = await Delivery.create({
       orderId: resolvedOrderId,
       studentId: customerId,
-      deliveryPersonId: randomStaff.id,
-      deliveryPersonName: randomStaff.name,
-      deliveryPersonPhone: randomStaff.phone,
+      deliveryPersonId: selectedRider?.id || "",
+      deliveryPersonName: selectedRider?.name || "Pending Assignment",
+      deliveryPersonPhone: selectedRider?.phone || "Pending Assignment",
       status: "Assigned",
       estimatedDeliveryTime: eta,
       assignedAt: now,
       currentLocation,
       notes: notes || "",
+      pickupLocation: pickupLocation || undefined,
+      deliveryLocation: deliveryLocation || undefined,
+      latitude: latitude ?? null,
+      longitude: longitude ?? null,
+      riderLocation:
+        latitude !== undefined && longitude !== undefined
+          ? { lat: Number(latitude), lng: Number(longitude) }
+          : undefined,
     });
 
-    // Notify rider
-    await Notification.create({
-      userId: randomStaff.id,
-      title: "New Delivery Assigned",
-      message: `A new delivery (${resolvedOrderId}) has been assigned to you.`,
-      type: "delivery",
-    });
-
-    // Notify customer on assignment
-    if (customerId) {
+    if (selectedRider) {
       await Notification.create({
-        userId: customerId,
-        title: "Delivery Assigned",
-        message: `Your order has been assigned to rider ${randomStaff.name}.`,
+        userId: selectedRider.id,
+        title: "New Delivery Assigned",
+        message: `A new delivery (${resolvedOrderId}) has been assigned to you.`,
         type: "delivery",
+      });
+
+      if (customerId) {
+        await Notification.create({
+          userId: customerId,
+          title: "Delivery Assigned",
+          message: `Your order has been assigned to rider ${selectedRider.name}.`,
+          type: "delivery",
+        });
+      }
+    } else {
+      if (customerId) {
+        await Notification.create({
+          userId: customerId,
+          title: "Delivery Pending Rider Assignment",
+          message: "Your order is created and will be assigned to a rider shortly.",
+          type: "delivery",
+        });
+      }
+
+      scheduleAutoAssignment({
+        deliveryId: delivery._id,
+        orderId: resolvedOrderId,
+        customerId,
       });
     }
 
@@ -204,6 +288,13 @@ const updateDeliveryLocation = async (req, res) => {
     delivery.currentLocation = currentLocation || delivery.currentLocation;
     delivery.latitude = latitude ?? delivery.latitude;
     delivery.longitude = longitude ?? delivery.longitude;
+
+    if (latitude !== undefined && longitude !== undefined) {
+      delivery.riderLocation = {
+        lat: Number(latitude),
+        lng: Number(longitude),
+      };
+    }
 
     await delivery.save();
 
