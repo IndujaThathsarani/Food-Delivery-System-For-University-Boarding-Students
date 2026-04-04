@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getAllNotifications,
   getUserNotifications,
@@ -6,9 +7,11 @@ import {
 } from "../features/notification-management/api/notificationApi";
 
 function NotificationBell({ role = "customer", userId = "USER001" }) {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [toastNotification, setToastNotification] = useState(null);
 
   const wrapperRef = useRef(null);
   const latestNotificationIdRef = useRef(null);
@@ -33,6 +36,7 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
         latestNotificationIdRef.current &&
         data[0]._id !== latestNotificationIdRef.current
       ) {
+        setToastNotification(data[0]);
         setToastVisible(true);
         setTimeout(() => setToastVisible(false), 3000);
       }
@@ -96,11 +100,43 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
     }
   };
 
+  const handleNotificationClick = async (event, notification) => {
+    await handleMarkAsRead(event, notification._id);
+
+    if (
+      role === "customer" &&
+      notification.title === "Rate Your Order" &&
+      notification.deliveryId
+    ) {
+      setIsOpen(false);
+      navigate(`/customer/dashboard?rateDelivery=${notification.deliveryId}`);
+    }
+  };
+
   return (
     <div className="relative" ref={wrapperRef}>
       {toastVisible && (
         <div className="fixed right-6 top-20 z-[100] rounded-xl bg-gray-900 px-4 py-3 text-sm text-white shadow-xl">
-          You have a new notification
+          <p className="font-semibold">{toastNotification?.title || "New Notification"}</p>
+          <p className="mt-1 text-xs text-gray-200">
+            {toastNotification?.message || "You have a new notification"}
+          </p>
+          {role === "customer" && toastNotification?.title === "Rate Your Order" && (
+            <button
+              type="button"
+              onClick={() => {
+                const targetDeliveryId = toastNotification?.deliveryId;
+                if (targetDeliveryId) {
+                  navigate(`/customer/dashboard?rateDelivery=${targetDeliveryId}`);
+                } else {
+                  navigate("/customer/dashboard");
+                }
+              }}
+              className="mt-2 rounded-md bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-orange-600"
+            >
+              Rate now
+            </button>
+          )}
         </div>
       )}
 
@@ -158,7 +194,7 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
                   className={`w-full cursor-pointer border-b border-gray-100 px-4 py-3 text-left transition hover:bg-gray-50 ${
                     notification.isRead ? "bg-white" : "bg-orange-50"
                   }`}
-                  onClick={(e) => handleMarkAsRead(e, notification._id)}
+                  onClick={(e) => handleNotificationClick(e, notification)}
                 >
                   <div className="mb-1 flex items-center justify-between gap-3">
                     <h4 className="text-sm font-semibold text-gray-900">

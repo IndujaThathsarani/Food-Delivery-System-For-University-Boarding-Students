@@ -31,3 +31,7 @@ export const getRiderStats = async (riderId) => {
 export const updateDeliveryLocation = async (id, data) => {
   return await deliveryApi.put(`/${id}/location`, data);
 };
+
+export const updateDeliveryRating = async (id, data) => {
+  return await deliveryApi.put(`/${id}/rating`, data);
+};

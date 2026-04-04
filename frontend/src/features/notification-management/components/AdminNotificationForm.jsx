@@ -10,6 +10,8 @@ const initialState = {
   type: "general",
 };
 
+const SELECT_ALL_RIDERS_VALUE = "__ALL_RIDERS__";
+
 function AdminNotificationForm({ customerRecipients = [], riderRecipients = [], onCreated }) {
   const [formData, setFormData] = useState(initialState);
   const [errors, setErrors] = useState({});
@@ -54,12 +56,30 @@ function AdminNotificationForm({ customerRecipients = [], riderRecipients = [], 
     try {
       setIsSubmitting(true);
 
-      await createNotification({
-        userId: formData.userId.trim(),
+      const notificationPayload = {
         title: formData.title.trim(),
         message: formData.message.trim(),
         type: formData.type,
-      });
+      };
+
+      if (
+        formData.recipientType === "rider" &&
+        formData.userId === SELECT_ALL_RIDERS_VALUE
+      ) {
+        await Promise.all(
+          riderRecipients.map((recipient) =>
+            createNotification({
+              ...notificationPayload,
+              userId: recipient.id,
+            })
+          )
+        );
+      } else {
+        await createNotification({
+          ...notificationPayload,
+          userId: formData.userId.trim(),
+        });
+      }
 
       setFormData((prev) => ({
         ...initialState,
@@ -112,6 +132,9 @@ function AdminNotificationForm({ customerRecipients = [], riderRecipients = [], 
             <option value="" disabled>
               Select recipient
             </option>
+            {formData.recipientType === "rider" && riderRecipients.length > 0 && (
+              <option value={SELECT_ALL_RIDERS_VALUE}>Select all riders</option>
+            )}
             {recipientOptions.map((recipient) => (
               <option key={recipient.id} value={recipient.id}>
                 {recipient.label}

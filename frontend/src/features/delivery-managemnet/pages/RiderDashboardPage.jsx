@@ -126,6 +126,34 @@ function RiderDashboardPage() {
     }
   };
 
+  const getDirectionsUrl = (delivery) => {
+    const destinationLat = Number(delivery?.deliveryLocation?.lat);
+    const destinationLng = Number(delivery?.deliveryLocation?.lng);
+
+    if (!Number.isFinite(destinationLat) || !Number.isFinite(destinationLng)) {
+      return "";
+    }
+
+    const originLat = Number(
+      delivery?.riderLocation?.lat ?? delivery?.latitude
+    );
+    const originLng = Number(
+      delivery?.riderLocation?.lng ?? delivery?.longitude
+    );
+
+    const params = new URLSearchParams({
+      api: "1",
+      destination: `${destinationLat},${destinationLng}`,
+      travelmode: "driving",
+    });
+
+    if (Number.isFinite(originLat) && Number.isFinite(originLng)) {
+      params.set("origin", `${originLat},${originLng}`);
+    }
+
+    return `https://www.google.com/maps/dir/?${params.toString()}`;
+  };
+
   const totalPages = Math.ceil(deliveries.length / deliveriesPerPage);
 
   const paginatedDeliveries = useMemo(() => {
@@ -173,7 +201,7 @@ function RiderDashboardPage() {
           </p>
         </div>
 
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-5">
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-6">
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <p className="text-sm text-gray-500">Total Assigned</p>
             <p className="mt-2 text-3xl font-bold text-gray-900">
@@ -206,6 +234,16 @@ function RiderDashboardPage() {
             <p className="text-sm text-gray-500">Avg. Delivery Time</p>
             <p className="mt-2 text-3xl font-bold text-blue-700">
               {stats?.averageDeliveryTime || 0} min
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-amber-50 p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Avg. Rating</p>
+            <p className="mt-2 text-3xl font-bold text-amber-700">
+              {stats?.averageRating ? `${stats.averageRating} / 5` : "No ratings"}
+            </p>
+            <p className="mt-1 text-xs text-gray-500">
+              {stats?.totalRatings || 0} rating{(stats?.totalRatings || 0) !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -241,6 +279,10 @@ function RiderDashboardPage() {
                   const canCancel =
                     delivery.status !== "Delivered" &&
                     delivery.status !== "Cancelled";
+                  const canOpenDirections =
+                    delivery.status !== "Delivered" &&
+                    delivery.status !== "Cancelled";
+                  const directionsUrl = getDirectionsUrl(delivery);
 
                   return (
                     <div
@@ -282,9 +324,34 @@ function RiderDashboardPage() {
                           <span className="font-semibold text-gray-900">Notes:</span>{" "}
                           {delivery.notes || "No notes"}
                         </p>
+                        <p>
+                          <span className="font-semibold text-gray-900">Customer Rating:</span>{" "}
+                          {Number.isInteger(delivery.customerRating) ? (
+                            <>
+                              <span className="text-amber-500">{"★".repeat(delivery.customerRating)}</span>
+                              <span className="text-gray-300">{"★".repeat(5 - delivery.customerRating)}</span>
+                            </>
+                          ) : (
+                            "Not rated yet"
+                          )}
+                        </p>
+                        <p className="md:col-span-2">
+                          <span className="font-semibold text-gray-900">Customer Feedback:</span>{" "}
+                          {delivery.customerFeedback || "No feedback"}
+                        </p>
                       </div>
 
                       <div className="mt-5 flex flex-wrap gap-3">
+                        {canOpenDirections && directionsUrl && (
+                          <button
+                            type="button"
+                            onClick={() => window.open(directionsUrl, "_blank", "noopener,noreferrer")}
+                            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                          >
+                            Open Directions
+                          </button>
+                        )}
+
                         {canMoveNext && (
                           <button
                             onClick={() => handleNextStep(delivery)}

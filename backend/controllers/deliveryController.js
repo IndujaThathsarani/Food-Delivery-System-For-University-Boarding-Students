@@ -5,9 +5,7 @@ const Notification = require("../models/Notification");
 const deliveryStaffPool = [
   { id: "RIDER001", name: "Kamal Perera", phone: "0771234567" },
   { id: "RIDER002", name: "Nimal Silva", phone: "0719876543" },
-  { id: "RIDER003", name: "Saman Kumara", phone: "0755551234" },
-  { id: "RIDER004", name: "Dasun Fernando", phone: "0763344556" },
-  { id: "RIDER005", name: "Ravindu Jayasekara", phone: "0789988776" },
+
 ];
 
 let autoAssignPointer = 0;
@@ -70,6 +68,7 @@ const createDelivery = async (req, res) => {
       orderId,
       studentId,
       deliveryPersonId,
+      status,
       currentLocation,
       notes,
       pickupLocation,
@@ -86,6 +85,22 @@ const createDelivery = async (req, res) => {
 
     const now = new Date();
     const eta = new Date(now.getTime() + 30 * 60000);
+    const allowedStatuses = ["Assigned", "Picked Up", "On the Way", "Delivered", "Cancelled"];
+    const resolvedStatus = allowedStatuses.includes(status) ? status : "Assigned";
+
+    const pickedUpAt =
+      resolvedStatus === "Picked Up" ||
+      resolvedStatus === "On the Way" ||
+      resolvedStatus === "Delivered"
+        ? now
+        : null;
+
+    const deliveredAt = resolvedStatus === "Delivered" ? now : null;
+
+    const deliveryDurationMinutes =
+      resolvedStatus === "Delivered" && pickedUpAt
+        ? Math.max(0, Math.round((deliveredAt - pickedUpAt) / 60000))
+        : 0;
 
     const delivery = await Delivery.create({
       orderId: resolvedOrderId,
@@ -93,9 +108,12 @@ const createDelivery = async (req, res) => {
       deliveryPersonId: selectedRider?.id || "",
       deliveryPersonName: selectedRider?.name || "Pending Assignment",
       deliveryPersonPhone: selectedRider?.phone || "Pending Assignment",
-      status: "Assigned",
+      status: resolvedStatus,
       estimatedDeliveryTime: eta,
       assignedAt: now,
+      pickedUpAt,
+      deliveredAt,
+      deliveryDurationMinutes,
       currentLocation,
       notes: notes || "",
       pickupLocation: pickupLocation || undefined,
@@ -178,7 +196,7 @@ const getDeliveryById = async (req, res) => {
 // Update delivery status
 const updateDeliveryStatus = async (req, res) => {
   try {
-    const { status, currentLocation } = req.body;
+    const { status, currentLocation, userId } = req.body;
 
     const delivery = await Delivery.findById(req.params.id);
 
@@ -210,6 +228,7 @@ const updateDeliveryStatus = async (req, res) => {
     await delivery.save();
 
     let customerMessage = "";
+    let customerTitle = "Delivery Update";
 
     if (status === "Assigned") {
       customerMessage = "Your order has been assigned to a rider.";
@@ -218,7 +237,8 @@ const updateDeliveryStatus = async (req, res) => {
     } else if (status === "On the Way") {
       customerMessage = "Your order is now on the way.";
     } else if (status === "Delivered") {
-      customerMessage = "Your order has been delivered.";
+      customerTitle = "Rate Your Order";
+      customerMessage = `Your order ${delivery.orderId || ""} has been delivered. Please give a rating.`.trim();
     } else if (status === "Cancelled") {
       customerMessage = "Your delivery has been cancelled.";
     }
@@ -226,8 +246,9 @@ const updateDeliveryStatus = async (req, res) => {
     if (delivery.studentId && customerMessage) {
       await Notification.create({
         userId: delivery.studentId,
-        title: "Delivery Update",
+        title: customerTitle,
         message: customerMessage,
+        deliveryId: status === "Delivered" ? String(delivery._id) : "",
         type: "delivery",
       });
     }
@@ -307,6 +328,41 @@ const updateDeliveryLocation = async (req, res) => {
   }
 };
 
+// Add or update customer rating for a delivered order
+const updateDeliveryRating = async (req, res) => {
+  try {
+    const { rating, feedback } = req.body;
+
+    const parsedRating = Number(rating);
+    if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+      return res.status(400).json({ message: "Rating must be an integer between 1 and 5" });
+    }
+
+    const delivery = await Delivery.findById(req.params.id);
+
+    if (!delivery) {
+      return res.status(404).json({ message: "Delivery not found" });
+    }
+
+    if (delivery.status !== "Delivered") {
+      return res.status(400).json({ message: "Rating is only allowed for delivered orders" });
+    }
+
+    delivery.customerRating = parsedRating;
+    delivery.customerFeedback = (feedback || "").trim();
+    delivery.ratedAt = new Date();
+
+    await delivery.save();
+
+    res.status(200).json(delivery);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to save rating",
+      error: error.message,
+    });
+  }
+};
+
 // Get rider performance stats
 const getRiderStats = async (req, res) => {
   try {
@@ -341,6 +397,20 @@ const getRiderStats = async (req, res) => {
           )
         : 0;
 
+    const ratedDeliveries = riderDeliveries.filter(
+      (d) => d.status === "Delivered" && Number.isInteger(d.customerRating)
+    );
+
+    const averageRating =
+      ratedDeliveries.length > 0
+        ? Number(
+            (
+              ratedDeliveries.reduce((sum, d) => sum + d.customerRating, 0) /
+              ratedDeliveries.length
+            ).toFixed(1)
+          )
+        : 0;
+
     res.status(200).json({
       riderId,
       totalAssigned,
@@ -348,6 +418,8 @@ const getRiderStats = async (req, res) => {
       delivered,
       cancelled,
       averageDeliveryTime,
+      averageRating,
+      totalRatings: ratedDeliveries.length,
     });
   } catch (error) {
     res.status(500).json({
@@ -410,4 +482,5 @@ module.exports = {
   getDeliveriesByRider,
   updateDeliveryLocation,
   getRiderStats,
+  updateDeliveryRating,
 };

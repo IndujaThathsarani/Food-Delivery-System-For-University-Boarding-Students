@@ -14,6 +14,11 @@ const notificationSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    deliveryId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     type: {
       type: String,
       enum: ["order", "delivery", "payment", "general"],

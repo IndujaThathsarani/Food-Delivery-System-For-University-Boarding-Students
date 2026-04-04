@@ -1,11 +1,13 @@
 export const validateAdminNotificationForm = (values) => {
   const errors = {};
+  const isSelectAllRiders =
+    values.recipientType === "rider" && values.userId === "__ALL_RIDERS__";
 
   if (!values.recipientType || values.recipientType.trim() === "") {
     errors.recipientType = "Recipient type is required";
   }
 
-  if (!values.userId || values.userId.trim() === "") {
+  if (!isSelectAllRiders && (!values.userId || values.userId.trim() === "")) {
     errors.userId = "Please select a recipient";
   }
 

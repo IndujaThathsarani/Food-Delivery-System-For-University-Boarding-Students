@@ -11,6 +11,7 @@ const {
   getDeliveriesByRider,
   updateDeliveryLocation,
   getRiderStats,
+  updateDeliveryRating,
 } = require("../controllers/deliveryController");
 
 router.post("/", createDelivery);
@@ -21,6 +22,7 @@ router.get("/rider/:riderId/stats", getRiderStats);
 router.get("/:id", getDeliveryById);
 router.put("/:id/status", updateDeliveryStatus);
 router.put("/:id/location", updateDeliveryLocation);
+router.put("/:id/rating", updateDeliveryRating);
 router.delete("/:id", deleteDelivery);
 
 module.exports = router;

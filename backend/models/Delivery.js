@@ -86,6 +86,21 @@ const deliverySchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    customerRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null,
+    },
+    customerFeedback: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    ratedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
