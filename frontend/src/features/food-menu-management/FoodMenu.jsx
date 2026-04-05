@@ -258,7 +258,7 @@ function GlowingCard({ children, className = "" }) {
   );
 }
 
-function FeaturedCategories({ isAdmin, categoryCounts = {} }) {
+function FeaturedCategories({ isAdmin, categoryCounts = {}, adminBasePath = '/admin/menu' }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -285,7 +285,7 @@ function FeaturedCategories({ isAdmin, categoryCounts = {} }) {
         {FEATURED_CATEGORIES.map((category, index) => {
           const itemCount = Number(categoryCounts[category.name] || 0);
           const path = isAdmin
-            ? `/admin/menu/category/${category.slug}`
+            ? `${adminBasePath}/category/${category.slug}`
             : `/menu/category/${category.slug}`;
 
           return (
@@ -775,7 +775,7 @@ function OfferForm({ form, errors, isEditing, onChange, onSubmit, onCancel }) {
   );
 }
 
-export default function FoodMenu({ isAdmin = false }) {
+export default function FoodMenu({ isAdmin = false, adminBasePath = '/admin/menu' }) {
   const { categorySlug } = useParams();
   const navigate = useNavigate();
   const selectedFeaturedCategory = useMemo(
@@ -1146,7 +1146,7 @@ export default function FoodMenu({ isAdmin = false }) {
               )}
               {isAdmin && (
                 <Link
-                  to="/admin/menu"
+                  to={adminBasePath}
                   className="rounded-full bg-green-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-green-800"
                 >
                   Admin Panel
@@ -1193,7 +1193,13 @@ export default function FoodMenu({ isAdmin = false }) {
           </>
         )}
 
-        {isAdmin && !isCategoryPage && <FeaturedCategories isAdmin categoryCounts={featuredCategoryCounts} />}
+        {isAdmin && !isCategoryPage && (
+          <FeaturedCategories
+            isAdmin
+            categoryCounts={featuredCategoryCounts}
+            adminBasePath={adminBasePath}
+          />
+        )}
 
         <div className="mt-6 space-y-6">
           {error && (
