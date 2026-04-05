@@ -1,31 +1,50 @@
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
+
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
+const fs = require("fs");
 
-const connectDB = require("./config/connectDB");
-const deliveryRoutes = require("./routes/deliveryRoutes");
-const notificationRoutes = require("./routes/notificationRoutes");
+const dbConnection = require("./config/connectDB");
+const seedAdmin = require("./seed/seedAdmin");
+
+const registerRoutes = require("./routes/register");
+const loginRoutes = require("./routes/login");
+const usersRoutes = require("./routes/users");
+const passwordResetRoutes = require("./routes/passwordReset");
+const orderRoutes = require("./routes/orderRoutes");
+const groupOrderRoutes = require("./routes/groupOrderRoutes");
+const stripeRoutes = require("./routes/stripeRoutes");
+const foodMenuRoutes = require("./routes/FoodMenus");
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Connect DB
-connectDB();
+fs.mkdirSync(path.join(__dirname, "uploads", "student-ids"), { recursive: true });
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
+app.use("/api/register", registerRoutes);
+app.use("/api/login", loginRoutes);
+app.use("/api/users", usersRoutes);
+app.use("/api/password-reset", passwordResetRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/group-orders", groupOrderRoutes);
+app.use("/api/stripe", stripeRoutes);
+app.use("/api/foodmenus", foodMenuRoutes);
 
-// Routes
-app.use("/api/deliveries", deliveryRoutes);
-app.use("/api/notifications", notificationRoutes);
+app.get("/", (req, res) => res.send("UNI EATS API — OK"));
 
-const PORT = process.env.PORT || 5000;
+async function start() {
+  await dbConnection();
+  await seedAdmin();
+  app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
+}
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+start().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });
