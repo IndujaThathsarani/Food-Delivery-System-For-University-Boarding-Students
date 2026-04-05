@@ -6,6 +6,7 @@ import {
   updateDeliveryStatus,
 } from "../api/deliveryApi";
 import DeliveryStatusBadge from "../components/DeliveryStatusBadge";
+import { generateRiderStatsReport } from "../reports/generateRiderStatsReport";
 
 function RiderDashboardPage() {
   const riderId = "RIDER001";
@@ -195,10 +196,22 @@ function RiderDashboardPage() {
         </div>
 
         <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900">Rider Summary</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Overview of current workload and performance for {stats?.riderId}.
-          </p>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Rider Summary</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Overview of current workload and performance for {stats?.riderId}.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => generateRiderStatsReport(stats, deliveries)}
+              disabled={!stats}
+              className="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Download Rider Stats PDF
+            </button>
+          </div>
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-6">

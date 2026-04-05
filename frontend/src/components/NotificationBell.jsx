@@ -12,9 +12,25 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
   const [isOpen, setIsOpen] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastNotification, setToastNotification] = useState(null);
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+
+  const defaultPreferences = useMemo(
+    () => ({
+      deliveryUpdates: true,
+      orderUpdates: role === "customer",
+      riderAssignments: role === "rider",
+      promotional: false,
+    }),
+    [role]
+  );
+  const [preferences, setPreferences] = useState(defaultPreferences);
 
   const wrapperRef = useRef(null);
   const latestNotificationIdRef = useRef(null);
+  const preferencesStorageKey = useMemo(() => {
+    const safeUserId = (userId || "guest").trim() || "guest";
+    return `notificationPrefs:${role}:${safeUserId}`;
+  }, [role, userId]);
 
   const fetchNotifications = async (showToast = false) => {
     try {
@@ -62,6 +78,26 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
   }, [role, userId]);
 
   useEffect(() => {
+    try {
+      const stored = localStorage.getItem(preferencesStorageKey);
+
+      if (!stored) {
+        setPreferences(defaultPreferences);
+        return;
+      }
+
+      const parsed = JSON.parse(stored);
+      setPreferences({
+        ...defaultPreferences,
+        ...parsed,
+      });
+    } catch (error) {
+      console.error("Failed to load notification preferences:", error);
+      setPreferences(defaultPreferences);
+    }
+  }, [defaultPreferences, preferencesStorageKey]);
+
+  useEffect(() => {
     const handleOutsideClick = (event) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -100,6 +136,36 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
     }
   };
 
+  const handleMarkAllAsRead = async () => {
+    const unreadNotifications = notifications.filter((item) => !item.isRead);
+
+    if (unreadNotifications.length === 0) {
+      return;
+    }
+
+    try {
+      await Promise.all(
+        unreadNotifications.map((item) => markNotificationAsRead(item._id))
+      );
+
+      setNotifications((prev) =>
+        prev.map((item) => ({
+          ...item,
+          isRead: true,
+        }))
+      );
+
+      try {
+        window.dispatchEvent(new Event("notificationsUpdated"));
+      } catch (e) {
+        // ignore in non-browser or if dispatch fails
+      }
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+      alert("Failed to mark all notifications as read");
+    }
+  };
+
   const handleNotificationClick = async (event, notification) => {
     await handleMarkAsRead(event, notification._id);
 
@@ -112,6 +178,31 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
       navigate(`/customer/dashboard?rateDelivery=${notification.deliveryId}`);
     }
   };
+
+  const handlePreferenceToggle = (event) => {
+    const { name, checked } = event.target;
+    setPreferences((prev) => ({
+      ...prev,
+      [name]: checked,
+    }));
+  };
+
+  const handleSavePreferences = () => {
+    try {
+      localStorage.setItem(preferencesStorageKey, JSON.stringify(preferences));
+      setIsPreferencesOpen(false);
+    } catch (error) {
+      console.error("Failed to save notification preferences:", error);
+      alert("Failed to save notification preferences");
+    }
+  };
+
+  const handleResetPreferences = () => {
+    setPreferences(defaultPreferences);
+  };
+
+  const preferenceLabel = role === "rider" ? "Rider Notification Settings" : "Customer Notification Settings";
+  const showPreferencesButton = role === "customer" || role === "rider";
 
   return (
     <div className="relative" ref={wrapperRef}>
@@ -176,10 +267,33 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="border-b border-gray-100 px-4 py-3">
-            <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
-            <p className="text-xs text-gray-500">
-              {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
-            </p>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                <p className="text-xs text-gray-500">
+                  {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleMarkAllAsRead}
+                  disabled={unreadCount === 0}
+                  className="rounded-md border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Read All
+                </button>
+                {showPreferencesButton && (
+                  <button
+                    type="button"
+                    onClick={() => setIsPreferencesOpen(true)}
+                    className="rounded-md border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+                  >
+                    Preferences
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
@@ -216,6 +330,92 @@ function NotificationBell({ role = "customer", userId = "USER001" }) {
                 </div>
               ))
             )}
+          </div>
+        </div>
+      )}
+
+      {isPreferencesOpen && showPreferencesButton && (
+        <div
+          className="absolute right-0 z-[300] mt-3 w-[28rem] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="border-b border-gray-100 px-4 py-3">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold text-gray-900">{preferenceLabel}</h3>
+              <button
+                type="button"
+                onClick={() => setIsPreferencesOpen(false)}
+                className="rounded-md px-2 py-1 text-xs font-semibold text-gray-500 transition hover:bg-gray-100"
+              >
+                Close
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">User: {userId}</p>
+          </div>
+
+          <div className="space-y-4 px-4 py-4">
+            <div className="rounded-lg border border-gray-200 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Alert Types</p>
+              <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="deliveryUpdates"
+                    checked={preferences.deliveryUpdates}
+                    onChange={handlePreferenceToggle}
+                  />
+                  Delivery updates
+                </label>
+                {role === "customer" && (
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      name="orderUpdates"
+                      checked={preferences.orderUpdates}
+                      onChange={handlePreferenceToggle}
+                    />
+                    Order updates
+                  </label>
+                )}
+                {role === "rider" && (
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      name="riderAssignments"
+                      checked={preferences.riderAssignments}
+                      onChange={handlePreferenceToggle}
+                    />
+                    Rider assignment alerts
+                  </label>
+                )}
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="promotional"
+                    checked={preferences.promotional}
+                    onChange={handlePreferenceToggle}
+                  />
+                  Promotional alerts
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 border-t border-gray-100 px-4 py-3">
+            <button
+              type="button"
+              onClick={handleResetPreferences}
+              className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              onClick={handleSavePreferences}
+              className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-900"
+            >
+              Save
+            </button>
           </div>
         </div>
       )}
