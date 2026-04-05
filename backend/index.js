@@ -4,11 +4,18 @@ const routes = require('./routes/FoodMenus');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config();
+dotenv.config({ path: path.join(__dirname, 'utils', '.env') });
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
 
-dbConnection();
+dbConnection().catch((error) => {
+	console.error(error.message);
+	process.exit(1);
+});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

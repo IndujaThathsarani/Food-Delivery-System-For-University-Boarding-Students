@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Sparkles, Star, Clock, TrendingUp, Shield, Zap, Heart, ShoppingBag, Coffee, Sun, Moon, Users, Award, Crown, Flame, Leaf, Pizza, Sandwich, Cake, IceCream, Apple, Salad, Soup, Droplet, Milk, Coffee as CoffeeIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import AdminPanel from "./components/AdminPanel";
 import FilterBar from "./components/FilterBar";
 import FoodCard from "./components/FoodCard";
@@ -73,21 +74,38 @@ const EMPTY_OFFER_FORM = {
 };
 
 const FEATURED_CATEGORIES = [
-  { name: "Soft Drinks", icon: "🧃", items: "11 items", slug: "soft-drinks" },
-  { name: "Coffee", icon: "☕", items: "8 items", slug: "coffee" },
-  { name: "Milk & Dairy", icon: "🥛", items: "6 items", slug: "milk-dairy" },
-  { name: "Water & Juice", icon: "💧", items: "12 items", slug: "water-juice" },
-  { name: "Snacks", icon: "🍟", items: "15 items", slug: "snacks" },
-  { name: "Sandwiches", icon: "🥪", items: "20 items", slug: "sandwiches" },
-  { name: "Burgers", icon: "🍔", items: "7 items", slug: "burgers" },
-  { name: "Short Eats", icon: "🌭", items: "5 items", slug: "short-eats" },
-  { name: "Pizza", icon: "🍕", items: "4 items", slug: "pizza" },
-  { name: "Cakes", icon: "🍰", items: "14 items", slug: "cakes" },
-  { name: "Ice Cream", icon: "🍨", items: "14 items", slug: "ice-cream" },
-  { name: "Fresh Fruits", icon: "🍎", items: "14 items", slug: "fresh-fruits" },
-  { name: "Healthy", icon: "🥗", items: "18 items", slug: "healthy" },
-  { name: "Soups", icon: "🍲", items: "18 items", slug: "soups" },
+  { name: "Soft Drinks", icon: <Droplet className="w-6 h-6" />, slug: "soft-drinks", gradient: "from-cyan-500 to-blue-500" },
+  { name: "Coffee", icon: <CoffeeIcon className="w-6 h-6" />, slug: "coffee", gradient: "from-amber-700 to-amber-500" },
+  { name: "Milk & Dairy", icon: <Milk className="w-6 h-6" />, slug: "milk-dairy", gradient: "from-blue-300 to-blue-100" },
+  { name: "Water & Juice", icon: <Droplet className="w-6 h-6" />, slug: "water-juice", gradient: "from-sky-400 to-cyan-300" },
+  { name: "Snacks", icon: <Sandwich className="w-6 h-6" />, slug: "snacks", gradient: "from-orange-400 to-amber-300" },
+  { name: "Sandwiches", icon: <Sandwich className="w-6 h-6" />, slug: "sandwiches", gradient: "from-yellow-500 to-orange-400" },
+  { name: "Burgers", icon: <Sandwich className="w-6 h-6" />, slug: "burgers", gradient: "from-red-600 to-orange-500" },
+  { name: "Short Eats", icon: <Pizza className="w-6 h-6" />, slug: "short-eats", gradient: "from-rose-500 to-pink-400" },
+  { name: "Pizza", icon: <Pizza className="w-6 h-6" />, slug: "pizza", gradient: "from-red-500 to-rose-400" },
+  { name: "Cakes", icon: <Cake className="w-6 h-6" />, slug: "cakes", gradient: "from-pink-400 to-rose-300" },
+  { name: "Ice Cream", icon: <IceCream className="w-6 h-6" />, slug: "ice-cream", gradient: "from-purple-400 to-pink-300" },
+  { name: "Fresh Fruits", icon: <Apple className="w-6 h-6" />, slug: "fresh-fruits", gradient: "from-green-400 to-emerald-300" },
+  { name: "Healthy", icon: <Leaf className="w-6 h-6" />, slug: "healthy", gradient: "from-emerald-500 to-green-400" },
+  { name: "Soups", icon: <Soup className="w-6 h-6" />, slug: "soups", gradient: "from-amber-400 to-yellow-300" },
 ];
+
+const iconMap = {
+  "🧃": <Droplet className="w-5 h-5" />,
+  "☕": <CoffeeIcon className="w-5 h-5" />,
+  "🥛": <Milk className="w-5 h-5" />,
+  "💧": <Droplet className="w-5 h-5" />,
+  "🍟": <Sandwich className="w-5 h-5" />,
+  "🥪": <Sandwich className="w-5 h-5" />,
+  "🍔": <Sandwich className="w-5 h-5" />, 
+  "🌭": <Pizza className="w-5 h-5" />,
+  "🍕": <Pizza className="w-5 h-5" />,
+  "🍰": <Cake className="w-5 h-5" />,
+  "🍨": <IceCream className="w-5 h-5" />,
+  "🍎": <Apple className="w-5 h-5" />,
+  "🥗": <Salad className="w-5 h-5" />,
+  "🍲": <Soup className="w-5 h-5" />,
+};
 
 function getCurrentMealLabel() {
   const hour = new Date().getHours();
@@ -179,51 +197,127 @@ function matchesFeaturedCategory(item, categoryName) {
 
 function LoadingSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, index) => (
-        <div
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <motion.div
           key={index}
-          className="animate-pulse overflow-hidden rounded-3xl border border-white/40 bg-white/70 shadow-lg"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 shadow-xl"
         >
-          <div className="h-44 bg-slate-200" />
-          <div className="space-y-3 p-4">
-            <div className="h-4 w-2/3 rounded bg-slate-200" />
-            <div className="h-3 w-1/3 rounded bg-slate-200" />
-            <div className="h-3 w-full rounded bg-slate-200" />
-            <div className="h-3 w-5/6 rounded bg-slate-200" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
+          <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300" />
+          <div className="p-5 space-y-3">
+            <div className="h-4 bg-gray-200 rounded-full w-2/3" />
+            <div className="h-3 bg-gray-200 rounded-full w-1/3" />
+            <div className="h-3 bg-gray-200 rounded-full w-full" />
+            <div className="h-10 bg-gray-200 rounded-full w-full mt-4" />
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
 }
 
-function FeaturedCategories({ isAdmin }) {
+function FloatingParticles() {
   return (
-    <div className="mt-12">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Featured Categories</h2>
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {[...Array(20)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-green-400 rounded-full"
+          initial={{
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            opacity: 0,
+          }}
+          animate={{
+            y: [null, -100, -200],
+            opacity: [0, 0.5, 0],
+          }}
+          transition={{
+            duration: Math.random() * 5 + 3,
+            repeat: Infinity,
+            delay: Math.random() * 5,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function GlowingCard({ children, className = "" }) {
+  return (
+    <div className={`relative group ${className}`}>
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl blur opacity-0 group-hover:opacity-75 transition duration-500" />
+      <div className="relative bg-white rounded-2xl">
+        {children}
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {FEATURED_CATEGORIES.map((category) => {
+    </div>
+  );
+}
+
+function FeaturedCategories({ isAdmin, categoryCounts = {} }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="mt-16"
+    >
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            Featured Categories
+          </h2>
+          <p className="text-gray-500 mt-2">Explore our delicious categories</p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full text-sm font-semibold shadow-lg"
+        >
+          View All
+        </motion.button>
+      </div>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
+        {FEATURED_CATEGORIES.map((category, index) => {
+          const itemCount = Number(categoryCounts[category.name] || 0);
           const path = isAdmin
             ? `/admin/menu/category/${category.slug}`
             : `/menu/category/${category.slug}`;
 
           return (
-            <Link
+            <motion.div
               key={category.slug}
-              to={path}
-              className="group rounded-2xl border border-gray-100 bg-white p-4 text-center transition-all duration-300 hover:border-green-200 hover:shadow-lg"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ y: -5 }}
             >
-              <div className="mb-2 text-3xl">{category.icon}</div>
-              <h3 className="text-sm font-semibold text-gray-800">{category.name}</h3>
-              <p className="mt-1 text-xs text-gray-500">{category.items}</p>
-            </Link>
+              <Link
+                to={path}
+                className="block group"
+              >
+                <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${category.gradient} p-4 text-center shadow-lg transition-all duration-300 group-hover:shadow-xl`}>
+                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+                  <div className="relative z-10">
+                    <div className="mb-2 text-white flex justify-center">
+                      {category.icon}
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">
+                      {category.name}
+                    </h3>
+                    <p className="mt-1 text-xs text-white/80">{itemCount} {itemCount === 1 ? "item" : "items"}</p>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -256,56 +350,78 @@ function HeroSlideshow() {
     return () => window.clearInterval(timerId);
   }, [slides.length]);
 
-  const goNext = () => setActiveIndex((prev) => (prev + 1) % slides.length);
-  const goPrev = () => setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length);
-
   return (
-    <section className="mt-6 overflow-hidden rounded-3xl border border-white/60 bg-white shadow-lg">
-      <div className="relative h-52 w-full sm:h-64 lg:h-72">
-        {slides.map((slide, index) => (
-          <div
-            key={slide.image}
-            className={`absolute inset-0 transition-opacity duration-700 ${index === activeIndex ? "opacity-100" : "opacity-0"}`}
+    <motion.section
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="mt-8 overflow-hidden rounded-3xl shadow-2xl"
+    >
+      <div className="relative h-64 w-full sm:h-80 lg:h-96">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeIndex}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.7 }}
+            className="absolute inset-0"
           >
-            <img src={slide.image} alt={slide.title} className="h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-black/15" />
-            <div className="absolute bottom-5 left-5 right-5 text-white sm:bottom-7 sm:left-7">
-              <h2 className="text-xl font-bold sm:text-3xl">{slide.title}</h2>
-              <p className="mt-1 text-sm text-white/90 sm:text-base">{slide.subtitle}</p>
+            <img
+              src={slides[activeIndex].image}
+              alt={slides[activeIndex].title}
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+            <div className="absolute bottom-8 left-8 right-8 text-white">
+              <motion.h2
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-2xl font-bold sm:text-4xl"
+              >
+                {slides[activeIndex].title}
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="mt-2 text-sm text-white/90 sm:text-base"
+              >
+                {slides[activeIndex].subtitle}
+              </motion.p>
             </div>
-          </div>
-        ))}
+          </motion.div>
+        </AnimatePresence>
 
         <button
           type="button"
-          onClick={goPrev}
-          className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-slate-700 backdrop-blur hover:bg-white"
-          aria-label="Previous slide"
+          onClick={() => setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length)}
+          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-2 text-white backdrop-blur-md transition hover:bg-white/40"
         >
-          ‹
+          <ChevronLeft className="w-5 h-5" />
         </button>
         <button
           type="button"
-          onClick={goNext}
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 px-3 py-2 text-sm font-semibold text-slate-700 backdrop-blur hover:bg-white"
-          aria-label="Next slide"
+          onClick={() => setActiveIndex((prev) => (prev + 1) % slides.length)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-2 text-white backdrop-blur-md transition hover:bg-white/40"
         >
-          ›
+          <ChevronLeft className="w-5 h-5 rotate-180" />
         </button>
 
-        <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
-          {slides.map((slide, index) => (
+        <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
+          {slides.map((_, index) => (
             <button
-              key={slide.title}
+              key={index}
               type="button"
               onClick={() => setActiveIndex(index)}
-              className={`h-2.5 w-2.5 rounded-full transition ${index === activeIndex ? "bg-white" : "bg-white/55"}`}
-              aria-label={`Go to slide ${index + 1}`}
+              className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                index === activeIndex ? "w-6 bg-white" : "bg-white/50"
+              }`}
             />
           ))}
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -316,114 +432,144 @@ function PromoBanner({
   onEditOffer,
   onDeleteOffer,
 }) {
-
   return (
-    <section className="mt-8 rounded-3xl border border-green-200 bg-gradient-to-br from-green-50 via-white to-lime-50 p-4 shadow-lg sm:p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-extrabold text-green-900 sm:text-2xl">Limited Time Offers</h2>
+    <motion.section
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="mt-12"
+    >
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            🔥 Limited Time Offers
+          </h2>
+          <p className="text-gray-500 mt-1">Grab these deals before they're gone!</p>
+        </div>
         {isAdmin && (
-          <button
-            type="button"
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onAddOffer}
-            className="rounded-full bg-green-700 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-green-800"
+            className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold shadow-lg"
           >
-            Add Offer
-          </button>
+            + Add Offer
+          </motion.button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {notices.map((notice) => (
-          <article
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {notices.map((notice, index) => (
+          <motion.div
             key={notice.id}
-            className="group overflow-hidden rounded-2xl border border-green-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.1 }}
+            whileHover={{ y: -8, scale: 1.02 }}
+            className="group relative overflow-hidden rounded-2xl bg-white shadow-xl"
           >
-            <div className="relative h-44">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative h-48 overflow-hidden">
               <img
                 src={notice.image}
                 alt={notice.title}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-              <span className="absolute left-3 top-3 rounded-full bg-lime-300 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-green-900">
-                Limited Time
-              </span>
+              <div className="absolute top-3 left-3">
+                <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold rounded-full">
+                  Limited Time
+                </span>
+              </div>
+              <div className="absolute top-3 right-3 text-2xl">
+                {notice.icon}
+              </div>
             </div>
 
-            <div className="space-y-2 p-4">
-              <p className="text-sm font-semibold text-green-700">{notice.icon} {notice.title}</p>
-              <h3 className="text-lg font-bold text-slate-900">{notice.subtitle}</h3>
-              <p className="text-sm text-slate-600">{notice.description}</p>
-              <button
-                type="button"
-                className="mt-1 rounded-full bg-green-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-800"
+            <div className="p-5">
+              <h3 className="text-xl font-bold text-gray-800 mb-1">{notice.title}</h3>
+              <p className="text-sm text-gray-600 mb-3">{notice.subtitle}</p>
+              <p className="text-sm text-gray-500 mb-4">{notice.description}</p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold shadow-md"
               >
                 {notice.buttonLabel}
-              </button>
+              </motion.button>
 
               {isAdmin && (
-                <div className="mt-2 flex gap-2">
+                <div className="mt-3 flex gap-2">
                   <button
-                    type="button"
                     onClick={() => onEditOffer(notice)}
-                    className="rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 transition hover:bg-lime-200"
+                    className="flex-1 py-1.5 bg-blue-500 text-white rounded-full text-sm font-semibold"
                   >
                     Edit
                   </button>
                   <button
-                    type="button"
                     onClick={() => onDeleteOffer(notice.id)}
-                    className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-200"
+                    className="flex-1 py-1.5 bg-red-500 text-white rounded-full text-sm font-semibold"
                   >
                     Delete
                   </button>
                 </div>
               )}
             </div>
-          </article>
+          </motion.div>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }
 
 function FeatureCards() {
   const features = [
     {
-      title: "Everyday Fresh & Clean with Our Products",
-      bgColor: "bg-orange-100",
-      textColor: "text-orange-800",
+      title: "Everyday Fresh & Clean",
+      description: "Premium quality ingredients",
+      bgColor: "from-orange-400 to-red-500",
       image: "🥗",
+      icon: <Leaf className="w-8 h-8" />,
     },
     {
-      title: "Make your Breakfast Healthy and Easy",
-      bgColor: "bg-blue-100",
-      textColor: "text-blue-800",
+      title: "Healthy Breakfast",
+      description: "Start your day right",
+      bgColor: "from-blue-400 to-cyan-500",
       image: "🍳",
+      icon: <Sun className="w-8 h-8" />,
     },
     {
-      title: "Affordable Student Meals",
-      bgColor: "bg-green-100",
-      textColor: "text-green-800",
+      title: "Affordable Meals",
+      description: "Student budget friendly",
+      bgColor: "from-green-400 to-emerald-500",
       image: "💰",
+      icon: <Heart className="w-8 h-8" />,
     },
   ];
 
   return (
     <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
       {features.map((feature, idx) => (
-        <div
+        <motion.div
           key={idx}
-          className={`${feature.bgColor} cursor-pointer rounded-2xl p-6 transition-all duration-300 hover:shadow-lg`}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: idx * 0.1 }}
+          whileHover={{ y: -5, scale: 1.02 }}
+          className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${feature.bgColor} p-6 text-white shadow-xl cursor-pointer`}
         >
-          <div className="mb-3 text-4xl">{feature.image}</div>
-          <h3 className={`${feature.textColor} mb-3 text-lg font-bold`}>
-            {feature.title}
-          </h3>
-          <button className="text-sm font-medium text-gray-700 hover:underline">
-            Shop now →
-          </button>
-        </div>
+          <div className="absolute -right-8 -top-8 opacity-20">
+            {feature.icon}
+          </div>
+          <div className="relative z-10">
+            <div className="mb-3 text-5xl">{feature.image}</div>
+            <h3 className="mb-2 text-xl font-bold">{feature.title}</h3>
+            <p className="mb-4 text-white/80 text-sm">{feature.description}</p>
+            <button className="text-sm font-semibold text-white hover:underline">
+              Shop now →
+            </button>
+          </div>
+        </motion.div>
       ))}
     </div>
   );
@@ -439,55 +585,89 @@ function PopularProducts({ items, onAddToCart }) {
   if (popularItems.length === 0) return null;
 
   return (
-    <div className="mt-12">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Popular Products</h2>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="mt-16"
+    >
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            🔥 Popular Products
+          </h2>
+          <p className="text-gray-500 mt-1">Most loved by our customers</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">Trending now</span>
+          <TrendingUp className="w-5 h-5 text-green-500" />
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {popularItems.map((item, idx) => (
-          <div
+          <motion.div
             key={item._id || idx}
-            className="group overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-300 hover:shadow-xl"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ delay: idx * 0.05 }}
+            whileHover={{ y: -8 }}
+            className="group relative"
           >
-            <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
-              <div className="absolute inset-0 flex items-center justify-center text-6xl">
-                🍽️
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur opacity-0 group-hover:opacity-75 transition duration-500" />
+            <div className="relative bg-white rounded-2xl overflow-hidden shadow-xl">
+              <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center text-7xl transition-transform duration-500 group-hover:scale-110">
+                  🍽️
+                </div>
+                {item.lowStock && (
+                  <div className="absolute top-3 left-3">
+                    <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-bold rounded-full animate-pulse">
+                      Low Stock
+                    </span>
+                  </div>
+                )}
+                {item.isPopular && (
+                  <div className="absolute top-3 right-3">
+                    <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold rounded-full">
+                      🔥 Popular
+                    </span>
+                  </div>
+                )}
               </div>
-              {item.lowStock && (
-                <span className="absolute left-3 top-3 rounded-full bg-yellow-500 px-2 py-1 text-xs text-white">
-                  Low Stock
-                </span>
-              )}
-            </div>
-            <div className="p-4">
-              <h3 className="mb-2 line-clamp-2 text-sm font-semibold text-gray-800">
-                {item.name}
-              </h3>
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-lg font-bold text-green-600">
-                  LKR {Number(item.price || 0).toFixed(2)}
-                </span>
-                <span className="text-sm text-gray-500">
-                  Qty: {item.stock || "0"}
-                </span>
+              <div className="p-4">
+                <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
+                  {item.name}
+                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-2xl font-bold text-green-600">
+                    LKR {Number(item.price || 0).toFixed(2)}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm text-gray-600">
+                      {item.ratingAverage.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  disabled={item.isOutOfStock}
+                  onClick={() => onAddToCart(item)}
+                  className={`w-full py-2.5 rounded-full font-semibold transition-all ${
+                    item.isOutOfStock
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md hover:shadow-lg"
+                  }`}
+                >
+                  {item.isOutOfStock ? "Out of Stock" : "Add to Cart"}
+                </motion.button>
               </div>
-              <button
-                type="button"
-                disabled={item.isOutOfStock}
-                onClick={() => onAddToCart(item)}
-                className={`w-full rounded-full py-2 text-sm font-semibold transition-colors ${
-                  item.isOutOfStock
-                    ? "cursor-not-allowed bg-gray-300 text-gray-500"
-                    : "bg-green-600 text-white hover:bg-green-700"
-                }`}
-              >
-                {item.isOutOfStock ? "Out of Stock" : "Add to Cart"}
-              </button>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -505,6 +685,96 @@ function enforceCategory(payload, categoryName) {
   };
 }
 
+function OfferForm({ form, errors, isEditing, onChange, onSubmit, onCancel }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onCancel}
+    >
+      <motion.div
+        initial={{ y: 50 }}
+        animate={{ y: 0 }}
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-2xl font-bold mb-4">
+          {isEditing ? "Edit Offer" : "Add New Offer"}
+        </h3>
+        {errors.length > 0 && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            {errors.map((error, i) => (
+              <p key={i} className="text-red-600 text-sm">{error}</p>
+            ))}
+          </div>
+        )}
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="Icon (emoji)"
+            value={form.icon}
+            onChange={(e) => onChange("icon", e.target.value)}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <input
+            type="text"
+            placeholder="Title"
+            value={form.title}
+            onChange={(e) => onChange("title", e.target.value)}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <input
+            type="text"
+            placeholder="Subtitle"
+            value={form.subtitle}
+            onChange={(e) => onChange("subtitle", e.target.value)}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <textarea
+            placeholder="Description"
+            value={form.description}
+            onChange={(e) => onChange("description", e.target.value)}
+            rows="3"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <input
+            type="text"
+            placeholder="Button Label"
+            value={form.buttonLabel}
+            onChange={(e) => onChange("buttonLabel", e.target.value)}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <input
+            type="url"
+            placeholder="Image URL"
+            value={form.image}
+            onChange={(e) => onChange("image", e.target.value)}
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+        <div className="flex gap-3 mt-6">
+          <button
+            type="submit"
+            onClick={onSubmit}
+            className="flex-1 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full font-semibold"
+          >
+            {isEditing ? "Update" : "Create"}
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-full font-semibold hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function FoodMenu({ isAdmin = false }) {
   const { categorySlug } = useParams();
   const navigate = useNavigate();
@@ -520,7 +790,7 @@ export default function FoodMenu({ isAdmin = false }) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState(SORT_OPTIONS.HIGHEST_RATED);
   const [budgetOnly, setBudgetOnly] = useState(false);
-  const [hideOutOfStock, setHideOutOfStock] = useState(true);
+  const [hideOutOfStock, setHideOutOfStock] = useState(false);
   const [scheduleOnly, setScheduleOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -655,6 +925,13 @@ export default function FoodMenu({ isAdmin = false }) {
 
     return sorted;
   }, [items, featuredItems, isCategoryPage, searchTerm, selectedCategory, budgetOnly, hideOutOfStock, scheduleOnly, currentMealLabel, sortBy]);
+
+  const featuredCategoryCounts = useMemo(() => {
+    return FEATURED_CATEGORIES.reduce((acc, category) => {
+      acc[category.name] = items.filter((item) => matchesFeaturedCategory(item, category.name)).length;
+      return acc;
+    }, {});
+  }, [items]);
 
   const saveAction = async (action) => {
     setIsSaving(true);
@@ -909,14 +1186,14 @@ export default function FoodMenu({ isAdmin = false }) {
 
             {!isAdmin && (
               <>
-                <FeaturedCategories isAdmin={false} />
+                <FeaturedCategories isAdmin={false} categoryCounts={featuredCategoryCounts} />
                 <FeatureCards />
               </>
             )}
           </>
         )}
 
-        {isAdmin && !isCategoryPage && <FeaturedCategories isAdmin />}
+        {isAdmin && !isCategoryPage && <FeaturedCategories isAdmin categoryCounts={featuredCategoryCounts} />}
 
         <div className="mt-6 space-y-6">
           {error && (
@@ -1032,89 +1309,5 @@ export default function FoodMenu({ isAdmin = false }) {
         </div>
       </section>
     </main>
-  );
-}
-
-function OfferForm({
-  form,
-  errors,
-  isEditing,
-  onChange,
-  onSubmit,
-  onCancel,
-}) {
-  return (
-    <section className="mt-4 rounded-2xl border border-green-200 bg-white p-4 shadow-sm sm:p-5">
-      <h3 className="text-lg font-bold text-slate-900">
-        {isEditing ? "Edit Offer" : "Add New Offer"}
-      </h3>
-
-      {errors.length > 0 && (
-        <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-3">
-          <p className="text-sm font-semibold text-rose-700">Please fix these issues:</p>
-          <ul className="mt-1 space-y-1 text-sm text-rose-600">
-            {errors.map((error, index) => (
-              <li key={index}>- {error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <form onSubmit={onSubmit} className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-        <input
-          value={form.icon}
-          onChange={(event) => onChange("icon", event.target.value)}
-          placeholder="Icon (e.g. 💰)"
-          className="rounded-xl border border-green-200 px-3 py-2 text-sm outline-none focus:border-green-500"
-        />
-        <input
-          value={form.title}
-          onChange={(event) => onChange("title", event.target.value)}
-          placeholder="Offer title"
-          className="rounded-xl border border-green-200 px-3 py-2 text-sm outline-none focus:border-green-500"
-        />
-        <input
-          value={form.subtitle}
-          onChange={(event) => onChange("subtitle", event.target.value)}
-          placeholder="Offer subtitle"
-          className="rounded-xl border border-green-200 px-3 py-2 text-sm outline-none focus:border-green-500 md:col-span-2"
-        />
-        <textarea
-          value={form.description}
-          onChange={(event) => onChange("description", event.target.value)}
-          placeholder="Offer description"
-          rows="3"
-          className="rounded-xl border border-green-200 px-3 py-2 text-sm outline-none focus:border-green-500 md:col-span-2"
-        />
-        <input
-          value={form.buttonLabel}
-          onChange={(event) => onChange("buttonLabel", event.target.value)}
-          placeholder="Button label"
-          className="rounded-xl border border-green-200 px-3 py-2 text-sm outline-none focus:border-green-500"
-        />
-        <input
-          value={form.image}
-          onChange={(event) => onChange("image", event.target.value)}
-          placeholder="Image URL"
-          className="rounded-xl border border-green-200 px-3 py-2 text-sm outline-none focus:border-green-500"
-        />
-
-        <div className="md:col-span-2 flex flex-wrap gap-2">
-          <button
-            type="submit"
-            className="rounded-full bg-green-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-800"
-          >
-            {isEditing ? "Update Offer" : "Save Offer"}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </section>
   );
 }

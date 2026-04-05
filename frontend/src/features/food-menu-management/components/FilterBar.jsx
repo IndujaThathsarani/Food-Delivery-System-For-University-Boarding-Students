@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal } from "lucide-react";
 const categoryFilters = ["All", "Breakfast", "Lunch", "Dinner", "Vegetarian", "Budget Meals"];
 
 export default function FilterBar({
+  isDarkMode = false,
   searchTerm,
   onSearchChange,
   selectedCategory,
@@ -19,15 +20,15 @@ export default function FilterBar({
   currentMealLabel,
 }) {
   return (
-    <section className="space-y-4 rounded-3xl border border-green-100 bg-white p-5 shadow-lg shadow-green-900/5">
+    <section className={`space-y-4 rounded-3xl border p-5 shadow-lg ${isDarkMode ? "border-slate-700 bg-slate-900/90 shadow-black/20" : "border-green-100 bg-white shadow-green-900/5"}`}>
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+        <Search className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${isDarkMode ? "text-slate-500" : "text-slate-400"}`} size={18} />
         <input
           type="text"
           value={searchTerm}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search by food name"
-          className="w-full rounded-2xl border border-green-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+          className={`w-full rounded-2xl border py-2.5 pl-10 pr-4 text-sm outline-none transition ${isDarkMode ? "border-slate-700 bg-slate-950 text-slate-100 placeholder:text-slate-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/20" : "border-green-200 bg-white text-slate-700 focus:border-green-500 focus:ring-2 focus:ring-green-100"}`}
         />
       </div>
 
@@ -39,7 +40,7 @@ export default function FilterBar({
           id="sort-menu"
           value={sortBy}
           onChange={(event) => onSortChange(event.target.value)}
-          className="w-full rounded-xl border border-green-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-green-500 sm:w-64"
+          className={`w-full rounded-xl border px-3 py-2 text-sm outline-none transition sm:w-64 ${isDarkMode ? "border-slate-700 bg-slate-950 text-slate-100 focus:border-green-500" : "border-green-200 bg-white text-slate-700 focus:border-green-500"}`}
         >
           <option value="PRICE_ASC">Price Low to High</option>
           <option value="PRICE_DESC">Price High to Low</option>
@@ -56,7 +57,9 @@ export default function FilterBar({
             className={`rounded-full px-4 py-2 text-xs font-semibold tracking-wide transition ${
               selectedCategory === category
                 ? "bg-green-700 text-white shadow"
-                : "bg-green-50 text-green-800 hover:bg-green-100"
+                : isDarkMode
+                  ? "bg-slate-800 text-slate-200 hover:bg-slate-700"
+                  : "bg-green-50 text-green-800 hover:bg-green-100"
             }`}
           >
             {category}
