@@ -1,18 +1,23 @@
 const mongoose = require("mongoose");
 
-const dburl = "mongodb+srv://janithsgunasekara003_db_user:1234@cluster0.9a4z8hj.mongodb.net/?appName=Cluster0"
-
-mongoose.set("strictQuery", true, "useNewUrlParser", true);
+mongoose.set("strictQuery", true);
 
 const connection = async () => {
-    try {
-        await mongoose.connect(dburl);
-        console.log("MongoDB connected successfully");
-    } catch (error) {
-        console.error(error.message);
-        process.exit(); // Exit the process with an error code
-    }
+  const dburl = process.env.MONGODB_URI;
+  if (!dburl || !String(dburl).trim()) {
+    console.error(
+      "Missing MONGODB_URI. Copy .env.example to .env in the backend folder and set your MongoDB connection string."
+    );
+    process.exit(1);
+  }
 
+  try {
+    await mongoose.connect(dburl);
+    console.log("MongoDB Connected~");
+  } catch (e) {
+    console.error(e.message);
+    process.exit(1);
+  }
 };
 
 module.exports = connection;

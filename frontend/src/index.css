@@ -1,108 +1,54 @@
-
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
-@import "tailwindcss";
-
-:root {
-  font-family: "Manrope", "Segoe UI", sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color-scheme: light;
-  --app-bg: #ffffff;
-  --app-text: #0f172a;
-}
-
 * {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  color: var(--app-text);
-  background-color: var(--app-bg);
-  background-image:
-    radial-gradient(circle at 12% 16%, rgba(34, 197, 94, 0.12), transparent 28%),
-    radial-gradient(circle at 88% 14%, rgba(132, 204, 22, 0.1), transparent 30%),
-    radial-gradient(circle at 20% 84%, rgba(16, 185, 129, 0.08), transparent 24%),
-    linear-gradient(145deg, #ffffff 0%, #f7fff8 45%, #f2fff3 100%);
-  background-attachment: fixed;
-}
-
-html[data-theme="dark"] {
-  color-scheme: dark;
-  --app-bg: #020617;
-  --app-text: #e2e8f0;
-}
-
-html[data-theme="dark"] body {
-  background-image:
-    radial-gradient(circle at 12% 16%, rgba(34, 197, 94, 0.14), transparent 26%),
-    radial-gradient(circle at 88% 14%, rgba(132, 204, 22, 0.12), transparent 28%),
-    radial-gradient(circle at 20% 84%, rgba(16, 185, 129, 0.1), transparent 24%),
-    linear-gradient(145deg, #020617 0%, #0f172a 45%, #111827 100%);
-}
-
-html[data-theme="dark"] .bg-white {
-  background-color: #0f172a !important;
-}
-
-html[data-theme="dark"] .bg-white\/70,
-html[data-theme="dark"] .bg-white\/75,
-html[data-theme="dark"] .bg-white\/80,
-html[data-theme="dark"] .bg-white\/90 {
-  background-color: rgba(15, 23, 42, 0.82) !important;
-}
-
-html[data-theme="dark"] .bg-slate-50,
-html[data-theme="dark"] .bg-slate-100,
-html[data-theme="dark"] .bg-slate-200 {
-  background-color: #0f172a !important;
-}
-
-html[data-theme="dark"] .bg-green-50,
-html[data-theme="dark"] .bg-green-100 {
-  background-color: #0f172a !important;
-}
-
-html[data-theme="dark"] .border-white,
-html[data-theme="dark"] .border-white\/40,
-html[data-theme="dark"] .border-white\/45,
-html[data-theme="dark"] .border-white\/60,
-html[data-theme="dark"] .border-slate-100,
-html[data-theme="dark"] .border-slate-200,
-html[data-theme="dark"] .border-green-100 {
-  border-color: rgba(148, 163, 184, 0.2) !important;
-}
-
-html[data-theme="dark"] .text-slate-900,
-html[data-theme="dark"] .text-slate-800,
-html[data-theme="dark"] .text-slate-700 {
-  color: #f8fafc !important;
-}
-
-html[data-theme="dark"] .text-slate-600,
-html[data-theme="dark"] .text-slate-500,
-html[data-theme="dark"] .text-slate-400 {
-  color: #94a3b8 !important;
-}
-
-html[data-theme="dark"] .shadow-lg,
-html[data-theme="dark"] .shadow-2xl {
-  box-shadow: 0 20px 50px rgba(2, 6, 23, 0.35) !important;
-}
-
+html,
+body,
 #root {
-  min-height: 100vh;
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+body {
+  font-family: 'Poppins', Arial, Helvetica, sans-serif;
+  background: #ffffff;
 }
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+/* Browsers default <a> to underline + blue / purple when visited — reset for normal text links */
+a {
+  text-decoration: none;
+  color: inherit;
 }
+
+a:visited {
+  color: inherit;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+/* Login page — horizontal food menu strip (right → left loop) */
+@keyframes login-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.login-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 1rem;
+  animation: login-marquee 28s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-marquee-track {
+    animation: none;
+  }
+} */
