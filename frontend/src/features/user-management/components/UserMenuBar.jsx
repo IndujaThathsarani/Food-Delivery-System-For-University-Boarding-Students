@@ -44,16 +44,16 @@ const UserMenuBar = ({ onLogout, onProfileClick }) => {
         <div className="absolute left-3 top-1/2 z-10 max-w-[40%] -translate-y-1/2 sm:left-4 md:left-8">
           <div className="flex w-fit max-w-full flex-col gap-1">
             <span
-              className="inline-block max-w-full truncate rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-bold leading-tight text-admin-accent sm:text-xs"
+              className="inline-block max-w-full truncate rounded-full bg-blue-50 px-2 py-0.5 text-xs font-bold leading-tight text-admin-accent sm:text-sm"
               title={roleLabel}
             >
               {roleLabel}
             </span>
             <span
-              className="inline-flex w-fit max-w-full items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-800 sm:text-xs"
+              className="inline-flex w-fit max-w-full items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-800 sm:text-sm"
               title="Online"
             >
-              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
               Online
             </span>
           </div>
