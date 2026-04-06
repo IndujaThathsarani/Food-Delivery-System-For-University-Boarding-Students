@@ -15,8 +15,6 @@ import {
   updateFoodItem,
 } from "./api";
 import UserMenuBar from "../user-management/components/UserMenuBar";
-import { clearAuth, getToken, getUser } from "../../lib/auth";
-import { USER_PROFILE_PATH } from "../../lib/postLoginRedirect";
 import "./FoodMenu.css";
 import { clearAuthWithAudit, getToken, getUser } from "../../lib/auth";
 import { getProfilePath } from "../../lib/postLoginRedirect";
