@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const apiUrl = (path) => `${API_BASE_URL}${path}`;
+
 const statusConfig = {
   Pending: { color: "bg-amber-100 text-amber-700 border-amber-200", dot: "bg-amber-500" },
   Confirmed: { color: "bg-blue-100 text-blue-700 border-blue-200", dot: "bg-blue-500" },
@@ -48,7 +51,7 @@ const AdminOrders = () => {
 
   const fetchOrders = () => {
     setLoading(true);
-    fetch("http://localhost:5000/api/orders")
+    fetch(apiUrl("/api/orders"))
       .then((res) => res.json())
       .then((data) => setOrders(Array.isArray(data) ? data : []))
       .catch((err) => console.error(err))
@@ -62,7 +65,7 @@ const AdminOrders = () => {
   const handleStatusChange = async (id, newStatus, currentOrder) => {
     setUpdatingId(id);
     try {
-      const response = await fetch(`http://localhost:5000/api/orders/${id}`, {
+      const response = await fetch(apiUrl(`/api/orders/${id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -84,7 +87,7 @@ const AdminOrders = () => {
   const handlePaymentStatusChange = async (id, newPaymentStatus, currentOrder) => {
     setUpdatingId(id);
     try {
-      const response = await fetch(`http://localhost:5000/api/orders/${id}`, {
+      const response = await fetch(apiUrl(`/api/orders/${id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,7 +109,7 @@ const AdminOrders = () => {
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
-      await fetch(`http://localhost:5000/api/orders/${deleteTarget}`, {
+      await fetch(apiUrl(`/api/orders/${deleteTarget}`), {
         method: "DELETE",
       });
       fetchOrders();

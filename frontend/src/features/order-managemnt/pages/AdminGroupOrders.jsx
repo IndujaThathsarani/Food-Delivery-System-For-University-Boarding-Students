@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const apiUrl = (path) => `${API_BASE_URL}${path}`;
+
 const statusConfig = {
   Open: { color: "bg-blue-100 text-blue-700 border-blue-200", dot: "bg-blue-500" },
   Closed: { color: "bg-amber-100 text-amber-700 border-amber-200", dot: "bg-amber-500" },
@@ -45,7 +48,7 @@ const AdminGroupOrders = () => {
 
   const fetchGroups = () => {
     setLoading(true);
-    fetch("http://localhost:5000/api/group-orders")
+    fetch(apiUrl("/api/group-orders"))
       .then((res) => res.json())
       .then((data) => setGroups(Array.isArray(data) ? data : []))
       .catch((err) => console.error(err))
@@ -57,7 +60,7 @@ const AdminGroupOrders = () => {
   const handleStatusChange = async (id, newStatus, currentGroup) => {
     setUpdatingId(id);
     try {
-      const response = await fetch(`http://localhost:5000/api/group-orders/${id}`, {
+      const response = await fetch(apiUrl(`/api/group-orders/${id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -82,7 +85,7 @@ const AdminGroupOrders = () => {
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/group-orders/${deleteTarget}`, {
+      const response = await fetch(apiUrl(`/api/group-orders/${deleteTarget}`), {
         method: "DELETE",
       });
       const data = await response.json();
