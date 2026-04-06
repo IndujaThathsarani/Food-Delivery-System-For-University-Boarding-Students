@@ -31,6 +31,8 @@ async function seedAdmin() {
         studentPhotoUrl: "",
         staffRole: "",
         registrationStatus: "approved",
+        emailVerified: true,
+        phoneVerified: false,
       },
     },
     { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }

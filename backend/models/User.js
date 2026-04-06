@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "approved", "declined"],
       default: "pending",
     },
+    /** Set true after inbox is proven (e.g. password reset via email). Cleared when email changes. */
+    emailVerified: { type: Boolean, default: false },
+    /** Reserved for SMS/OTP; false until implemented. */
+    phoneVerified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

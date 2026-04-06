@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import LandingLeafIcon from '../components/LandingLeafIcon';
+import FeedbackModal from '../components/FeedbackModal';
+import { useFeedbackModal } from '../hooks/useFeedbackModal';
 import food1 from '../../../assets/riceandcurry1.png';
 import food2 from '../../../assets/lunchbox.png';
 import food3 from '../../../assets/yellowRice.png';
@@ -11,18 +13,39 @@ const MENU_IMAGES = [food1, food2, food3, food4];
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { feedback, dismissFeedback, showFeedback } = useFeedbackModal();
   const [registerType, setRegisterType] = useState('customer');
 
   const [regFullName, setRegFullName] = useState('');
   const [regStudentId, setRegStudentId] = useState('');
   const [regStudentPhoto, setRegStudentPhoto] = useState(null);
   const [regStaffRole, setRegStaffRole] = useState('Delivery Manager');
+  const [staffRoleOptions, setStaffRoleOptions] = useState([
+    'Delivery Manager',
+    'Order Manager',
+    'Food Menu Manager',
+    'Delivery Driver',
+  ]);
   const [regPhone, setRegPhone] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regErrors, setRegErrors] = useState({});
   const [regApiError, setRegApiError] = useState('');
   const [regSubmitting, setRegSubmitting] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await axios.get('/api/staff-roles/names');
+        if (Array.isArray(data) && data.length > 0) {
+          setStaffRoleOptions(data);
+          setRegStaffRole((prev) => (data.includes(prev) ? prev : data[0]));
+        }
+      } catch {
+        /* keep defaults */
+      }
+    })();
+  }, []);
 
   const clearFieldError = (field) => {
     setRegErrors((prev) => {
@@ -52,8 +75,7 @@ const RegisterPage = () => {
         fd.append('staffRole', regStaffRole);
       }
       const { data } = await axios.post('/api/register', fd);
-      window.alert(data.message || 'Your account has been submitted for review.');
-      navigate('/login', { replace: true });
+      showFeedback('success', 'Success', data.message || 'Your account has been submitted for review.');
     } catch (err) {
       const data = err.response?.data;
       const msg = data?.message || err.message || 'Registration failed.';
@@ -80,6 +102,16 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen bg-white text-black">
+      <FeedbackModal
+        open={Boolean(feedback)}
+        variant={feedback?.variant ?? 'success'}
+        title={feedback?.title ?? ''}
+        message={feedback?.message ?? ''}
+        onClose={() => {
+          dismissFeedback();
+          navigate('/login', { replace: true });
+        }}
+      />
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
           <Link to="/" className="flex items-center gap-2">
@@ -245,13 +277,14 @@ const RegisterPage = () => {
                       id="staffRole"
                       value={regStaffRole}
                       onChange={(e) => setRegStaffRole(e.target.value)}
-                          className={`mt-1 w-full rounded-xl border bg-[#FAFAF8] px-3 py-1.5 text-sm text-black outline-none ${inputOkClass}`}
-                        >
-                          <option value="Delivery Manager">Delivery Manager</option>
-                          <option value="Order Manager">Order Manager</option>
-                          <option value="Food Menu Manager">Food Menu Manager</option>
-                          <option value="Delivery Driver">Delivery driver</option>
-                        </select>
+                      className={`mt-1 w-full rounded-xl border bg-[#FAFAF8] px-3 py-1.5 text-sm text-black outline-none ${inputOkClass}`}
+                    >
+                      {staffRoleOptions.map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 )}
 

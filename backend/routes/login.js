@@ -2,6 +2,8 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { toAuthUserPayload } = require("../lib/authUserPayload");
+const { writeAuditLog } = require("../lib/auditLogWrite");
 
 const router = express.Router();
 
@@ -33,19 +35,12 @@ router.post("/", async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
+    await writeAuditLog(req, user, "Logged In");
+
     return res.json({
       message: "Login successful.",
       token,
-      user: {
-        id: user._id.toString(),
-        email: user.email,
-        fullName: user.fullName,
-        accountType: user.accountType,
-        phone: user.phone || "",
-        studentPhotoUrl: user.studentPhotoUrl || "",
-        staffRole: user.staffRole || "",
-        riderId: user.riderId || "",
-      },
+      user: toAuthUserPayload(user),
     });
   } catch (err) {
     console.error(err);

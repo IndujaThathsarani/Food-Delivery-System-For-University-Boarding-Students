@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import LandingLeafIcon from '../components/LandingLeafIcon';
+import FeedbackModal from '../components/FeedbackModal';
+import { useFeedbackModal } from '../hooks/useFeedbackModal';
 
 const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -13,6 +15,8 @@ const btnPrimary =
   'w-full rounded-full bg-[#0B8E3A] py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#087532] hover:shadow-lg';
 
 function ForgotPasswordPage() {
+  const navigate = useNavigate();
+  const { feedback, dismissFeedback, showFeedback } = useFeedbackModal();
   const [step, setStep] = useState('email'); // 'email' | 'code' | 'reset'
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -121,7 +125,7 @@ function ForgotPasswordPage() {
         code,
         newPassword,
       });
-      window.alert('Password updated. Please log in.');
+      showFeedback('success', 'Success', 'Password updated. Please log in.');
     } catch (err) {
       const data = err.response?.data;
       const msg = data?.message || err.message || 'Reset failed.';
@@ -137,6 +141,16 @@ function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-white text-black">
+      <FeedbackModal
+        open={Boolean(feedback)}
+        variant={feedback?.variant ?? 'success'}
+        title={feedback?.title ?? ''}
+        message={feedback?.message ?? ''}
+        onClose={() => {
+          dismissFeedback();
+          navigate('/login');
+        }}
+      />
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
           <Link to="/" className="flex items-center gap-2">

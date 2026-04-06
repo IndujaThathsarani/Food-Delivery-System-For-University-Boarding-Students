@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { setAuth } from '../../../lib/auth';
 import { resolvePostLoginDestination } from '../../../lib/postLoginRedirect';
 import LandingLeafIcon from '../components/LandingLeafIcon';
+import FeedbackModal from '../components/FeedbackModal';
+import { useFeedbackModal } from '../hooks/useFeedbackModal';
 import { isValidEmail, digitsOnlyMax10, isPhone10Digits, isValidStudentId } from '../utils/formValidation';
 import food1 from '../../../assets/riceandcurry1.png';
 import food2 from '../../../assets/lunchbox.png';
@@ -15,6 +17,7 @@ const MENU_IMAGES = [food1, food2, food3, food4];
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { feedback, dismissFeedback, showFeedback } = useFeedbackModal();
   const [showRegister, setShowRegister] = useState(false);
   const [registerType, setRegisterType] = useState('customer');
 
@@ -26,6 +29,12 @@ const LoginPage = () => {
   const [regStudentId, setRegStudentId] = useState('');
   const [regStudentPhoto, setRegStudentPhoto] = useState(null);
   const [regStaffRole, setRegStaffRole] = useState('Delivery Manager');
+  const [staffRoleOptions, setStaffRoleOptions] = useState([
+    'Delivery Manager',
+    'Order Manager',
+    'Food Menu Manager',
+    'Delivery Driver',
+  ]);
   const [regPhone, setRegPhone] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
@@ -34,6 +43,20 @@ const LoginPage = () => {
   const [regSubmitting, setRegSubmitting] = useState(false);
   const [loginApiError, setLoginApiError] = useState('');
   const [loginSubmitting, setLoginSubmitting] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await axios.get('/api/staff-roles/names');
+        if (Array.isArray(data) && data.length > 0) {
+          setStaffRoleOptions(data);
+          setRegStaffRole((prev) => (data.includes(prev) ? prev : data[0]));
+        }
+      } catch {
+        /* keep defaults */
+      }
+    })();
+  }, []);
 
   const validateLogin = () => {
     const err = {};
@@ -108,14 +131,7 @@ const LoginPage = () => {
         fd.append('staffRole', regStaffRole);
       }
       const { data } = await axios.post('/api/register', fd);
-      window.alert(data.message || 'Your account has been submitted for review.');
-      setShowRegister(false);
-      setRegFullName('');
-      setRegStudentId('');
-      setRegStudentPhoto(null);
-      setRegPhone('');
-      setRegEmail('');
-      setRegPassword('');
+      showFeedback('success', 'Success', data.message || 'Your account has been submitted for review.');
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Registration failed.';
       setRegApiError(msg);
@@ -132,8 +148,29 @@ const LoginPage = () => {
   const btnPrimary =
     'w-full rounded-full bg-[#0B8E3A] py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#087532] hover:shadow-lg';
 
+  const closeRegisterSuccessModal = () => {
+    dismissFeedback();
+    setShowRegister(false);
+    setRegFullName('');
+    setRegStudentId('');
+    setRegStudentPhoto(null);
+    setRegStaffRole('Delivery Manager');
+    setRegPhone('');
+    setRegEmail('');
+    setRegPassword('');
+    setRegErrors({});
+    setRegApiError('');
+  };
+
   return (
     <div className="min-h-screen bg-white text-black">
+      <FeedbackModal
+        open={Boolean(feedback)}
+        variant={feedback?.variant ?? 'success'}
+        title={feedback?.title ?? ''}
+        message={feedback?.message ?? ''}
+        onClose={closeRegisterSuccessModal}
+      />
       {/* Top bar */}
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
@@ -316,10 +353,11 @@ const LoginPage = () => {
                           onChange={(e) => setRegStaffRole(e.target.value)}
                           className={`mt-1 w-full rounded-xl border bg-[#FAFAF8] px-3 py-1.5 text-sm text-black outline-none ${regErrors.staffRole ? inputErrorClass : inputOkClass}`}
                         >
-                          <option value="Delivery Manager">Delivery Manager</option>
-                          <option value="Order Manager">Order Manager</option>
-                          <option value="Food Menu Manager">Food Menu Manager</option>
-                          <option value="Delivery Driver">Delivery driver</option>
+                          {staffRoleOptions.map((role) => (
+                            <option key={role} value={role}>
+                              {role}
+                            </option>
+                          ))}
                         </select>
                         {regErrors.staffRole ? <p className="mt-1 text-xs text-red-600">{regErrors.staffRole}</p> : null}
                       </div>
