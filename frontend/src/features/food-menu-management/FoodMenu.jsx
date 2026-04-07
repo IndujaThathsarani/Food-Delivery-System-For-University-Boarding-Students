@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, Sparkles, Star, Clock, TrendingUp, Shield, Zap, Heart, ShoppingBag, Coffee, Sun, Moon, Users, Award, Crown, Flame, Leaf, Pizza, Sandwich, Cake, IceCream, Apple, Salad, Soup, Droplet, Milk, Coffee as CoffeeIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminPanel from "./components/AdminPanel";
@@ -15,6 +15,7 @@ import {
   updateFoodItem,
 } from "./api";
 import UserMenuBar from "../user-management/components/UserMenuBar";
+import CustomerMenuBar from "../user-management/components/CustomerMenuBar";
 import "./FoodMenu.css";
 import { clearAuthWithAudit, getToken, getUser } from "../../lib/auth";
 import { getProfilePath } from "../../lib/postLoginRedirect";
@@ -725,8 +726,11 @@ function OfferForm({ form, errors, isEditing, onChange, onSubmit, onCancel }) {
 export default function FoodMenu({ isAdmin = false, adminBasePath = '/admin/menu' }) {
   const { categorySlug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const showUserMenuBar =
     isAdmin || (Boolean(getToken()) && getUser()?.accountType === 'customer');
+  const isLoggedInCustomer =
+    Boolean(getToken()) && getUser()?.accountType === 'customer';
   const selectedFeaturedCategory = useMemo(
     () => getFeaturedCategoryBySlug(categorySlug),
     [categorySlug],
@@ -786,6 +790,24 @@ export default function FoodMenu({ isAdmin = false, adminBasePath = '/admin/menu
   useEffect(() => {
     fetchItems();
   }, []);
+
+  /** Scroll to All Products when visiting /menu#all-products (or legacy #our-menu). */
+  useEffect(() => {
+    if (!location.pathname.startsWith('/menu')) return;
+    const raw = (location.hash || '').replace(/^#/, '');
+    if (raw !== 'all-products' && raw !== 'our-menu') return;
+
+    const run = () => {
+      const el = document.getElementById('all-products');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    if (!loading) {
+      const id = window.setTimeout(run, 80);
+      return () => window.clearTimeout(id);
+    }
+    return undefined;
+  }, [location.pathname, location.hash, loading]);
 
   useEffect(() => {
     try {
@@ -1098,16 +1120,28 @@ export default function FoodMenu({ isAdmin = false, adminBasePath = '/admin/menu
   return (
     <div className="food-menu-feature-font min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {showUserMenuBar ? (
-        <UserMenuBar
-          onLogout={async () => {
-            await clearAuthWithAudit();
-            navigate("/login");
-          }}
-          onProfileClick={() => navigate(getProfilePath(getUser()))}
-        />
+        isLoggedInCustomer ? (
+          <CustomerMenuBar
+            onLogout={async () => {
+              await clearAuthWithAudit();
+              navigate("/login");
+            }}
+            onProfileClick={() => navigate(getProfilePath(getUser()))}
+            cartItemsCount={cartItemsCount}
+            onCartClick={() => setIsCartOpen(true)}
+          />
+        ) : (
+          <UserMenuBar
+            onLogout={async () => {
+              await clearAuthWithAudit();
+              navigate("/login");
+            }}
+            onProfileClick={() => navigate(getProfilePath(getUser()))}
+          />
+        )
       ) : null}
       <main className="pb-10">
-      {!isAdmin && (
+      {!isAdmin && !isLoggedInCustomer && (
         <header className="sticky top-0 z-40 border-b border-[#0B8E3A]/10 bg-white/95 backdrop-blur-sm">
           <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
             <Link to="/" className="text-2xl font-semibold tracking-tight text-[#0B8E3A] no-underline">
@@ -1116,7 +1150,7 @@ export default function FoodMenu({ isAdmin = false, adminBasePath = '/admin/menu
 
             <nav className="hidden items-center gap-8 text-sm font-medium text-black md:flex">
               <Link to="/" className="text-black no-underline transition hover:text-black/80">Home</Link>
-              <a href="#our-menu" className="text-black no-underline transition hover:text-black/80">Our Menu</a>
+              <a href="#all-products" className="text-black no-underline transition hover:text-black/80">Our Menu</a>
               <a href="/#team" className="text-black no-underline transition hover:text-black/80">Team</a>
               <Link to="/group-order" className="text-black no-underline transition hover:text-black/80">Group Order</Link>
               <button
@@ -1239,7 +1273,7 @@ export default function FoodMenu({ isAdmin = false, adminBasePath = '/admin/menu
               <>
                 {!isCategoryPage && <PopularProducts items={items} onAddToCart={handleAddToCart} />}
 
-                <div id="our-menu" className="mt-8">
+                <div id="all-products" className="mt-8 scroll-mt-28">
                   <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-900">
                       {isCategoryPage ? selectedFeaturedCategory.name : "All Products"}
