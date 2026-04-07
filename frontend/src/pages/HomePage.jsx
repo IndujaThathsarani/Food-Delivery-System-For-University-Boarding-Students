@@ -96,38 +96,38 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans antialiased selection:bg-emerald-200/60 selection:text-emerald-950">
+    <div className="uni-home uni-home-pattern min-h-screen bg-[#f5f7f9] text-[#2c2f31] font-['Inter'] antialiased selection:bg-emerald-200/70 selection:text-emerald-950">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/75 backdrop-blur-xl shadow-sm shadow-zinc-900/5">
+      <header className="sticky top-0 z-50 border-b border-emerald-900/5 bg-white/80 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <Link to="/" className="group flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600/10 text-emerald-600 ring-1 ring-emerald-600/15 transition group-hover:bg-emerald-600/15">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-700/10 transition group-hover:bg-emerald-200">
               <LeafIcon className="h-6 w-6" />
             </div>
-            <span className="text-xl font-semibold tracking-tight text-emerald-700 sm:text-2xl">UNI EATS</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold tracking-tight text-emerald-900 sm:text-2xl">UNI EATS</span>
           </Link>
-          <nav className="hidden items-center gap-1 text-sm font-medium text-zinc-600 md:flex">
+          <nav className="hidden items-center gap-1 text-sm font-semibold text-zinc-600 md:flex">
             <a
               href="#home"
-              className="rounded-full px-3 py-2 no-underline transition hover:bg-zinc-100 hover:text-zinc-900"
+              className="rounded-full border border-emerald-700/15 bg-emerald-50 px-3 py-2 text-emerald-800 no-underline transition hover:bg-emerald-100"
             >
               Home
             </a>
             <Link
               to="/menu"
-              className="rounded-full px-3 py-2 no-underline transition hover:bg-zinc-100 hover:text-zinc-900"
+              className="rounded-full px-3 py-2 no-underline transition hover:bg-emerald-50 hover:text-emerald-800"
             >
               Food Menu
             </Link>
             <a
               href="#menu"
-              className="rounded-full px-3 py-2 no-underline transition hover:bg-zinc-100 hover:text-zinc-900"
+              className="rounded-full px-3 py-2 no-underline transition hover:bg-emerald-50 hover:text-emerald-800"
             >
               Our Menu
             </a>
             <a
               href="#cart"
-              className="rounded-full px-3 py-2 no-underline transition hover:bg-zinc-100 hover:text-zinc-900"
+              className="rounded-full px-3 py-2 no-underline transition hover:bg-emerald-50 hover:text-emerald-800"
             >
               Cart
             </a>
@@ -135,13 +135,13 @@ export default function HomePage() {
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               to="/register"
-              className="text-sm font-semibold text-zinc-700 no-underline transition hover:text-zinc-900"
+              className="text-sm font-semibold text-zinc-700 no-underline transition hover:text-emerald-800"
             >
               Register
             </Link>
             <Link
               to="/login"
-              className="rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700 sm:px-5"
+              className="rounded-full bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white shadow-[0_10px_30px_rgba(0,106,45,0.28)] transition hover:bg-emerald-800 sm:px-5"
             >
               Order Now
             </Link>
@@ -151,7 +151,7 @@ export default function HomePage() {
 
       {/* Hero */}
       <section id="home" className="relative overflow-hidden pb-20 pt-10 md:pb-28 md:pt-14">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-emerald-50/80 via-white to-zinc-50" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-emerald-50/45 via-transparent to-transparent" />
         <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl" />
         <div className="pointer-events-none absolute -right-24 top-40 h-64 w-64 rounded-full bg-amber-200/30 blur-3xl" />
         <div className="pointer-events-none absolute bottom-20 left-1/3 h-48 w-48 rounded-full bg-teal-200/20 blur-3xl" />
@@ -168,7 +168,7 @@ export default function HomePage() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
               Campus dining
             </p>
-            <h1 className="mt-5 text-4xl font-bold leading-[1.1] tracking-tight text-emerald-800 sm:text-5xl lg:text-[3.15rem]">
+            <h1 className="mt-5 font-['Plus_Jakarta_Sans'] text-4xl font-extrabold leading-[1.05] tracking-tight text-emerald-950 sm:text-5xl lg:text-[3.15rem]">
               Fresh &amp; healthy meals for campus life
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-zinc-600 sm:text-lg">
@@ -178,7 +178,7 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700"
+                className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-7 py-3.5 text-sm font-bold text-white shadow-[0_10px_30px_rgba(0,106,45,0.28)] transition hover:bg-emerald-800"
               >
                 Explore menu
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -187,7 +187,7 @@ export default function HomePage() {
               </Link>
               <Link
                 to="/menu"
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-800 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-800 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/40"
               >
                 Browse food menu
               </Link>
@@ -199,6 +199,7 @@ export default function HomePage() {
               <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-tr from-emerald-400/20 via-transparent to-amber-300/20 blur-xl" />
               <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-2xl shadow-zinc-900/10 ring-1 ring-zinc-900/5">
                 <img src={HERO_IMG} alt="Healthy food bowl" className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/45 via-zinc-950/10 to-transparent" />
               </div>
             </div>
           </div>
@@ -206,7 +207,7 @@ export default function HomePage() {
 
         {/* Floating search bar */}
         <div className="relative z-10 mx-auto -mb-6 max-w-4xl px-4 sm:px-6">
-          <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200/80 bg-white/90 p-4 shadow-xl shadow-zinc-900/10 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-5">
+          <div className="flex flex-col gap-3 rounded-full border border-zinc-200/80 bg-white/95 p-4 shadow-xl shadow-zinc-900/10 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-3">
             <div className="flex items-center gap-3 sm:border-r sm:border-zinc-100 sm:pr-6">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-600/10">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -227,7 +228,7 @@ export default function HomePage() {
                 </svg>
               </span>
               <select
-                className="w-full cursor-pointer rounded-xl border border-zinc-200 bg-zinc-50/80 px-4 py-2.5 text-sm font-medium text-emerald-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full cursor-pointer rounded-full border border-zinc-200 bg-zinc-50/80 px-4 py-2.5 text-sm font-medium text-emerald-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 defaultValue="today"
               >
                 <option value="today">Today · Lunch window</option>
@@ -237,7 +238,7 @@ export default function HomePage() {
             </div>
             <button
               type="button"
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25 transition hover:bg-emerald-700"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white shadow-[0_8px_24px_rgba(0,106,45,0.24)] transition hover:bg-emerald-800"
               aria-label="Search"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -252,7 +253,7 @@ export default function HomePage() {
       <section className="mx-auto mt-4 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">Campus highlights</h2>
+            <h2 className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-3xl">Campus highlights</h2>
             <p className="mt-1 text-sm text-zinc-500">Rotating picks from today&apos;s kitchen</p>
           </div>
         </div>
@@ -307,14 +308,14 @@ export default function HomePage() {
       {/* Limited offers */}
       <section className="mx-auto mt-16 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">Limited-time offers</h2>
+          <h2 className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-3xl">Limited-time offers</h2>
           <p className="mt-2 text-zinc-500">Grab these deals before they&apos;re gone.</p>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {LIMITED_OFFERS.map((offer) => (
             <article
               key={offer.id}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm shadow-zinc-900/5 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-zinc-900/10"
+              className="group flex flex-col overflow-hidden rounded-3xl border border-zinc-200/80 bg-white shadow-sm shadow-zinc-900/5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-zinc-900/10"
             >
               <div className="relative h-48 overflow-hidden">
                 <img
@@ -336,7 +337,7 @@ export default function HomePage() {
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-600">{offer.description}</p>
                 <Link
                   to="/menu"
-                  className="mt-5 block w-full rounded-full bg-emerald-600 py-2.5 text-center text-sm font-semibold text-white no-underline shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700"
+                  className="mt-5 block w-full rounded-full bg-emerald-700 py-2.5 text-center text-sm font-semibold text-white no-underline shadow-[0_8px_24px_rgba(0,106,45,0.24)] transition hover:bg-emerald-800"
                 >
                   {offer.buttonLabel}
                 </Link>
@@ -352,7 +353,7 @@ export default function HomePage() {
           {HOME_FEATURE_CARDS.map((card) => (
             <div
               key={card.title}
-              className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-7 text-white shadow-xl shadow-zinc-900/15 ring-1 ring-white/10`}
+              className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${card.gradient} p-7 text-white shadow-xl shadow-zinc-900/15 ring-1 ring-white/10`}
             >
               <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
               <div className="relative">
@@ -371,21 +372,21 @@ export default function HomePage() {
       {/* About */}
       <section id="menu" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:px-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-emerald-800 md:text-4xl">Pure &amp; healthy</h2>
+          <h2 className="font-['Plus_Jakarta_Sans'] text-3xl font-extrabold tracking-tight text-emerald-900 md:text-4xl">Pure &amp; healthy</h2>
           <p className="mx-auto mt-3 max-w-2xl text-zinc-600">
             Wholesome ingredients, mindful recipes, and a commitment to your wellbeing.
           </p>
         </div>
         <div className="mt-14 grid gap-12 md:grid-cols-2 md:items-center md:gap-16">
           <div>
-            <h3 className="text-2xl font-bold tracking-tight text-emerald-800">Crafted for students who care</h3>
+            <h3 className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold tracking-tight text-emerald-900">Crafted for students who care</h3>
             <p className="mt-4 leading-relaxed text-zinc-600">
               We partner with local farms and use seasonal produce to build meals that fuel your studies. No artificial
               additives — just honest flavor in every bite, from breakfast bowls to late-night snacks.
             </p>
             <Link
               to="/login"
-              className="mt-8 inline-block rounded-full bg-emerald-600 px-8 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700"
+              className="mt-8 inline-block rounded-full bg-emerald-700 px-8 py-3 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(0,106,45,0.24)] transition hover:bg-emerald-800"
             >
               Learn more
             </Link>
@@ -401,7 +402,7 @@ export default function HomePage() {
       </section>
 
       {/* Three pillars */}
-      <section className="border-y border-zinc-200/80 bg-white py-20">
+      <section className="border-y border-zinc-200/70 bg-white/80 py-20 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-6 md:grid-cols-3">
             {[
@@ -435,7 +436,7 @@ export default function HomePage() {
             ].map((card) => (
               <div
                 key={card.title}
-                className="flex flex-col rounded-2xl border border-zinc-200/80 bg-zinc-50/80 p-8 shadow-sm transition hover:border-emerald-200/80 hover:shadow-md"
+                className="flex flex-col rounded-3xl border border-zinc-200/80 bg-zinc-50/80 p-8 shadow-sm transition hover:border-emerald-200/80 hover:shadow-md"
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-sm ring-1 ring-zinc-200/80">
                   {card.icon}
@@ -458,30 +459,30 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section id="team" className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-zinc-900 py-20 text-white">
+      <section id="team" className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-emerald-200/70 via-emerald-100/50 to-white py-20 text-emerald-950">
         <div className="pointer-events-none absolute inset-0 opacity-40">
           <div className="absolute -left-20 top-0 h-64 w-64 rounded-full bg-emerald-400/30 blur-3xl" />
           <div className="absolute -right-10 bottom-0 h-72 w-72 rounded-full bg-teal-400/20 blur-3xl" />
         </div>
         <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Join thousands of happy eaters</h2>
-          <p className="mt-4 text-emerald-100/90">
+          <h2 className="font-['Plus_Jakarta_Sans'] text-3xl font-extrabold tracking-tight md:text-4xl">Join thousands of happy eaters</h2>
+          <p className="mt-4 text-emerald-900/80">
             Start ordering today and taste the difference of meals made with intention.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-emerald-200/90">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-emerald-900/80">
             <div className="flex items-center gap-2">
-              <span className="text-3xl font-bold text-white">4.9</span>
+              <span className="text-3xl font-bold text-emerald-950">4.9</span>
               <span className="text-sm">★ rating</span>
             </div>
-            <div className="hidden h-8 w-px bg-white/20 sm:block" />
+            <div className="hidden h-8 w-px bg-emerald-700/20 sm:block" />
             <div className="flex items-center gap-2">
-              <span className="text-3xl font-bold text-white">12k+</span>
+              <span className="text-3xl font-bold text-emerald-950">12k+</span>
               <span className="text-sm">orders</span>
             </div>
           </div>
           <Link
             to="/login"
-            className="mt-10 inline-block rounded-full bg-white px-10 py-4 text-sm font-semibold text-emerald-900 shadow-lg shadow-zinc-900/30 transition hover:bg-emerald-50"
+            className="mt-10 inline-block rounded-full bg-emerald-700 px-10 py-4 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(0,106,45,0.24)] transition hover:bg-emerald-800"
           >
             Get started
           </Link>
@@ -489,82 +490,82 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer id="cart" className="bg-zinc-950 text-zinc-400">
+      <footer id="cart" className="mt-20 bg-zinc-100 text-zinc-500">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <div className="grid gap-12 md:grid-cols-4">
             <div>
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-200/70 text-emerald-700">
                   <LeafIcon className="h-5 w-5" />
                 </div>
-                <span className="text-lg font-semibold text-white">UNI EATS</span>
+                <span className="text-lg font-semibold text-zinc-900">UNI EATS</span>
               </div>
               <p className="mt-4 text-sm leading-relaxed">
                 Fresh, balanced meals for university boarding — simple ordering, honest ingredients, care in every box.
               </p>
             </div>
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Company</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Company</h4>
               <ul className="mt-4 space-y-2 text-sm">
                 <li>
-                  <a href="#menu" className="text-zinc-300 transition hover:text-white">
+                  <a href="#menu" className="text-zinc-600 transition hover:text-emerald-800">
                     About us
                   </a>
                 </li>
                 <li>
-                  <a href="#team" className="text-zinc-300 transition hover:text-white">
+                  <a href="#team" className="text-zinc-600 transition hover:text-emerald-800">
                     Careers
                   </a>
                 </li>
                 <li>
-                  <Link to="/login" className="text-zinc-300 transition hover:text-white">
+                  <Link to="/login" className="text-zinc-600 transition hover:text-emerald-800">
                     Login
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Resources</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Resources</h4>
               <ul className="mt-4 space-y-2 text-sm">
                 <li>
-                  <a href="#menu" className="text-zinc-300 transition hover:text-white">
+                  <a href="#menu" className="text-zinc-600 transition hover:text-emerald-800">
                     Menu
                   </a>
                 </li>
                 <li>
-                  <a href="#cart" className="text-zinc-300 transition hover:text-white">
+                  <a href="#cart" className="text-zinc-600 transition hover:text-emerald-800">
                     Nutrition info
                   </a>
                 </li>
                 <li>
-                  <Link to="/admin/dashboard" className="text-zinc-300 transition hover:text-white">
+                  <Link to="/admin/dashboard" className="text-zinc-600 transition hover:text-emerald-800">
                     Admin
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Policies</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Policies</h4>
               <ul className="mt-4 space-y-2 text-sm">
                 <li>
-                  <a href="#" className="text-zinc-300 transition hover:text-white">
+                  <a href="#" className="text-zinc-600 transition hover:text-emerald-800">
                     Privacy
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-zinc-300 transition hover:text-white">
+                  <a href="#" className="text-zinc-600 transition hover:text-emerald-800">
                     Terms
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-zinc-300 transition hover:text-white">
+                  <a href="#" className="text-zinc-600 transition hover:text-emerald-800">
                     Contact
                   </a>
                 </li>
               </ul>
             </div>
           </div>
-          <div className="mt-12 border-t border-zinc-800 pt-8 text-center text-xs text-zinc-500">
+          <div className="mt-12 border-t border-zinc-200 pt-8 text-center text-xs text-zinc-400">
             © {new Date().getFullYear()} UNI EATS. All rights reserved.
           </div>
         </div>

@@ -5,7 +5,7 @@ import "./App.css";
 
 function AdminApp() {
   return (
-    <div className="min-h-screen bg-gray-100 p-6 space-y-6">
+    <div className="uni-theme min-h-screen p-6 space-y-6">
       <AdminOrders />
       <AdminGroupOrders />
     </div>

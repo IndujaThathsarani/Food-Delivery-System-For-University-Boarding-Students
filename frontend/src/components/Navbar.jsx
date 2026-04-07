@@ -19,18 +19,18 @@ function Navbar() {
   }
 
   const navClass = ({ isActive }) =>
-    `rounded-lg px-3 py-2 transition ${
+    `rounded-full px-4 py-2.5 text-sm transition ${
       isActive
-        ? "bg-white/20 font-semibold text-lime-200"
-        : "text-white hover:bg-white/10 hover:text-emerald-200"
+        ? "bg-emerald-700 font-semibold text-white shadow"
+        : "text-emerald-900 hover:bg-emerald-100"
     }`;
 
   return (
-    <div className="bg-gradient-to-r from-emerald-700 via-green-700 to-teal-700 px-6 py-4 text-white shadow-md">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-lg font-bold">Food Delivery System</h1>
+    <div className="mx-auto mb-4 mt-5 w-full max-w-[1600px] px-4 md:px-8">
+      <div className="uni-panel flex flex-col gap-3 rounded-2xl px-5 py-4 md:flex-row md:items-center md:justify-between">
+        <h1 className="text-lg font-bold text-emerald-900">Food Delivery System</h1>
 
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-2 text-sm">
           <NavLink to="/admin/deliveries" className={navClass}>
             Admin Deliveries
           </NavLink>

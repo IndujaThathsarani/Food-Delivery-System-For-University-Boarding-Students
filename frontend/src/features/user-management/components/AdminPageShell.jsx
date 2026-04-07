@@ -13,7 +13,7 @@ export default function AdminPageShell({
   return (
     <>
       <div
-        className={`mb-2 h-1 w-14 rounded-full bg-admin-accent ${stripClassName}`}
+        className={`mb-2 h-1 w-14 rounded-full bg-emerald-700 ${stripClassName}`}
         aria-hidden
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -21,7 +21,7 @@ export default function AdminPageShell({
           <h1 className={`font-bold tracking-tight text-slate-900 ${titleClassName}`}>{title}</h1>
           {description ? (
             <p
-              className={`mt-1.5 text-sm font-normal leading-relaxed text-admin-ink/90 md:text-[15px] ${descriptionClassName}`}
+              className={`uni-muted-text mt-1.5 text-sm font-normal leading-relaxed md:text-[15px] ${descriptionClassName}`}
             >
               {description}
             </p>

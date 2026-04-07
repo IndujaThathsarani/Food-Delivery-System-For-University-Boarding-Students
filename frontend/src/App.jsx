@@ -48,6 +48,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <div className="uni-theme">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route
@@ -209,6 +210,7 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </div>
     </BrowserRouter>
   );
 }

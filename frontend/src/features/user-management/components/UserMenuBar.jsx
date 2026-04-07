@@ -53,13 +53,13 @@ const UserMenuBar = ({ onLogout, onProfileClick }) => {
   }, [photoSrc]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-emerald-900/10 bg-white/90 shadow-[0_8px_20px_rgba(17,90,47,0.08)] backdrop-blur">
       <div className="relative mx-auto flex min-h-[72px] max-w-[1600px] items-center justify-center px-3 py-2 sm:min-h-[76px] sm:px-6 md:px-8">
         {/* Left: role + Online status */}
         <div className="absolute left-3 top-1/2 z-10 max-w-[40%] -translate-y-1/2 sm:left-4 md:left-8">
           <div className="flex w-fit max-w-full flex-col gap-1">
             <span
-              className="inline-block max-w-full truncate rounded-full bg-blue-50 px-2 py-0.5 text-xs font-bold leading-tight text-admin-accent sm:text-sm"
+              className="uni-accent-chip inline-block max-w-full truncate rounded-full px-2 py-0.5 text-xs font-bold leading-tight sm:text-sm"
               title={roleLabel}
             >
               {roleLabel}
@@ -107,10 +107,10 @@ const UserMenuBar = ({ onLogout, onProfileClick }) => {
             )}
             <span className="hidden min-w-0 text-sm sm:inline" title={firstName}>
               Hello,{' '}
-              <span className="font-semibold text-admin-accent">{firstName}</span>
+              <span className="font-semibold text-emerald-800">{firstName}</span>
             </span>
             <span className="max-w-[4rem] truncate text-[11px] sm:hidden" title={firstName}>
-              Hi, <span className="font-semibold text-admin-accent">{firstName}</span>
+              Hi, <span className="font-semibold text-emerald-800">{firstName}</span>
             </span>
           </button>
 
@@ -120,7 +120,7 @@ const UserMenuBar = ({ onLogout, onProfileClick }) => {
               e.preventDefault();
               if (onLogout) onLogout();
             }}
-            className="inline-flex items-center gap-2 rounded-full border-0 bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600/50 sm:px-4 sm:py-2.5"
+            className="inline-flex items-center gap-2 rounded-full border-0 bg-emerald-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700/50 sm:px-4 sm:py-2.5"
           >
             <LogOut className="h-4 w-4 shrink-0 text-white" strokeWidth={2} aria-hidden />
             Logout

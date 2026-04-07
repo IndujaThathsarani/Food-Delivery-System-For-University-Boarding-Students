@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
 * {
   box-sizing: border-box;
 }
@@ -12,8 +14,64 @@ body,
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background:
+    radial-gradient(circle at 16% 12%, rgba(99, 243, 141, 0.16), transparent 24%),
+    radial-gradient(circle at 88% 78%, rgba(32, 201, 151, 0.1), transparent 28%),
+    #f7fbf7;
+  color: #132318;
+}
+
+:root {
+  --uni-surface: #f7fbf7;
+  --uni-surface-strong: #ffffff;
+  --uni-border: #d4e6d6;
+  --uni-text: #132318;
+  --uni-muted: #4b6652;
+  --uni-accent: #177a3f;
+  --uni-accent-strong: #115a2f;
+  --uni-soft-shadow: 0 10px 28px rgba(17, 90, 47, 0.08);
+}
+
+.uni-theme {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(107, 255, 143, 0.16), transparent 24%),
+    radial-gradient(circle at 86% 74%, rgba(0, 224, 145, 0.08), transparent 26%),
+    linear-gradient(rgba(23, 122, 63, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 122, 63, 0.04) 1px, transparent 1px),
+    var(--uni-surface);
+  background-size: auto, auto, 30px 30px, 30px 30px, auto;
+  color: var(--uni-text);
+}
+
+.uni-panel {
+  background: var(--uni-surface-strong);
+  border: 1px solid var(--uni-border);
+  box-shadow: var(--uni-soft-shadow);
+}
+
+.uni-muted-text {
+  color: var(--uni-muted);
+}
+
+.uni-accent-chip {
+  background: rgba(23, 122, 63, 0.12);
+  color: var(--uni-accent-strong);
+}
+
+.uni-home {
+  --uni-home-grid: rgba(0, 106, 45, 0.05);
+}
+
+.uni-home-pattern {
+  background-image:
+    radial-gradient(circle at 10% 15%, rgba(107, 255, 143, 0.2), transparent 24%),
+    radial-gradient(circle at 86% 74%, rgba(0, 224, 253, 0.16), transparent 26%),
+    linear-gradient(var(--uni-home-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--uni-home-grid) 1px, transparent 1px);
+  background-size: auto, auto, 28px 28px, 28px 28px;
+  background-position: center, center, center, center;
 }
 
 /* Browsers default <a> to underline + blue / purple when visited — reset for normal text links */

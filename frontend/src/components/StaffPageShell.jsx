@@ -9,7 +9,7 @@ export default function StaffPageShell({ children }) {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen uni-theme">
       <UserMenuBar
         onLogout={async () => {
           await clearAuthWithAudit();
@@ -17,7 +17,9 @@ export default function StaffPageShell({ children }) {
         }}
         onProfileClick={() => navigate(getProfilePath(getUser()))}
       />
-      <div className="mx-auto max-w-[1600px] px-4 py-6 md:px-8">{children}</div>
+      <div className="mx-auto max-w-[1600px] px-4 py-6 md:px-8">
+        <div className="uni-panel rounded-3xl p-4 md:p-6">{children}</div>
+      </div>
     </div>
   );
 }
