@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const User = require("../models/User");
 const { requireAdmin } = require("../middleware/requireAdmin");
-const Notification = require("../models/Notification");
+const SupportConversation = require("../models/SupportConversation");
 const { sendRegistrationApprovedEmail } = require("../lib/email");
 const { toAuthUserPayload } = require("../lib/authUserPayload");
 
@@ -310,7 +310,7 @@ router.get("/dashboard/stats", async (req, res) => {
       pendingStaff,
       registeredStaff,
       approvedThisMonth,
-      unreadNotifications,
+      unreadMessageAgg,
       staffRoleDefinitionsCount,
     ] = await Promise.all([
       User.countDocuments({ accountType: "customer", registrationStatus: "approved" }),
@@ -326,9 +326,18 @@ router.get("/dashboard/stats", async (req, res) => {
         registrationStatus: "approved",
         updatedAt: { $gte: startOfMonth },
       }),
-      Notification.countDocuments({ isRead: false }),
+      SupportConversation.aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: { $ifNull: ["$unreadForAdmin", 0] } },
+          },
+        },
+      ]),
       StaffRole.countDocuments(),
     ]);
+    const unreadNotifications = Number(unreadMessageAgg?.[0]?.total || 0);
+
 
     const monthlyTarget = Number(process.env.MONTHLY_NEW_USER_TARGET || "120") || 120;
     const monthlyGoalPercent =
