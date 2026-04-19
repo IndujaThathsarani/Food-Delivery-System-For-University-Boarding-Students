@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   ChevronLeft,
@@ -433,6 +433,16 @@ function HeroSlider() {
 }
 
 function FeaturedCategories({ isAdmin, categoryCounts = {}, adminBasePath = '/admin/menu' }) {
+  const sliderRef = useRef(null);
+
+  const scrollCategories = (direction) => {
+    if (!sliderRef.current) return;
+    sliderRef.current.scrollBy({
+      left: direction * 260,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <section className="mt-6">
       <div className="mb-6 flex items-center justify-between">
@@ -442,47 +452,70 @@ function FeaturedCategories({ isAdmin, categoryCounts = {}, adminBasePath = '/ad
         </div>
         <Link
           to={isAdmin ? `${adminBasePath}` : "/menu"}
-          className="rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-2 text-sm font-bold text-white no-underline shadow-md transition hover:brightness-95"
+          className="rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-2 text-sm font-bold text-white no-underline transition hover:brightness-95"
         >
           View All
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
-        {FEATURED_CATEGORIES.map((category) => {
-          const path = isAdmin
-            ? `${adminBasePath}/category/${category.slug}`
-            : `/menu/category/${category.slug}`;
-          const previewImage = category.image || null;
+      <div className="relative">
+        <button
+          type="button"
+          aria-label="Scroll categories left"
+          onClick={() => scrollCategories(-1)}
+          className="absolute left-0 top-1/2 z-20 flex h-11 w-11 -translate-x-5 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-slate-700"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
 
-          return (
-            <Link key={category.slug} to={path} className="group block no-underline">
-              <div className="relative overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white px-3 py-3 text-slate-900 transition-all duration-300 group-hover:-translate-y-1">
-                <div className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="mb-2 flex h-20 w-full items-center justify-center rounded-2xl bg-white p-2">
-                    {previewImage ? (
-                      <img
-                        src={previewImage}
-                        alt={category.name}
-                        className="h-full w-full object-contain"
-                        onError={(event) => {
-                          event.currentTarget.style.display = "none";
-                        }}
-                      />
-                    ) : (
-                      <span className="text-3xl leading-none">{category.emoji}</span>
-                    )}
+        <div
+          ref={sliderRef}
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-1 pb-3 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {FEATURED_CATEGORIES.map((category) => {
+            const path = isAdmin
+              ? `${adminBasePath}/category/${category.slug}`
+              : `/menu/category/${category.slug}`;
+            const previewImage = category.image || null;
+
+            return (
+              <Link key={category.slug} to={path} className="group block min-w-[180px] flex-none snap-start no-underline">
+                <div className="relative overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white px-4 py-5 text-slate-900 transition-all duration-300 group-hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="relative z-10 flex flex-col items-center text-center">
+                    <div className="mb-3 flex h-24 w-full items-center justify-center rounded-2xl bg-white p-2">
+                      {previewImage ? (
+                        <img
+                          src={previewImage}
+                          alt={category.name}
+                          className="h-full w-full object-contain"
+                          onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <span className="text-3xl leading-none">{category.emoji}</span>
+                      )}
+                    </div>
+                    <span className="text-[14px] font-extrabold leading-tight text-slate-800">{category.name}</span>
+                    <p className="mt-1.5 text-[11px] font-semibold text-orange-600">
+                      {Number(categoryCounts[category.name] || 0)} items
+                    </p>
                   </div>
-                  <span className="text-xs font-extrabold leading-tight text-slate-800">{category.name}</span>
-                  <p className="mt-1 text-[10px] font-semibold text-orange-600">
-                    {Number(categoryCounts[category.name] || 0)} items
-                  </p>
                 </div>
-              </div>
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          aria-label="Scroll categories right"
+          onClick={() => scrollCategories(1)}
+          className="absolute right-0 top-1/2 z-20 flex h-11 w-11 translate-x-5 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-slate-700"
+        >
+          <ChevronLeft className="h-5 w-5 rotate-180" />
+        </button>
       </div>
     </section>
   );
